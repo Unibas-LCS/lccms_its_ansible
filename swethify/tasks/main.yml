@@ -1,6 +1,12 @@
 ---
-# This role should only execute one specific task and should not depend on any other role.
-# In order to provide useful information, each task should start with the '- name' entry
-# consisting of the FQN of the task, a colon, and a unique text. Above this line, an
-# explanatory text should be placed. Each line of this text must start with '#* '. This 
-# text is then used to compose the information on what is happening.
+# In some environments, it is necessary to have only one network operational, never LAN and
+# WiFi at the same time.
+
+  - name: "Install script to allow only one network at a time."
+    copy:
+      src: 70-swethify.sh
+      dest: /etc/NetworkManager/dispatcher.d/70-swethify.sh
+      owner: root
+      group: root
+      mode: '0744'
+    notify: 'reload NetworkManager'
