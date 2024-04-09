@@ -1,0 +1,6 @@
+---
+# This role should only execute one specific task and should not depend on any other role.
+# In order to provide useful information, each task should start with the '- name' entry
+# consisting of the FQN of the task, a colon, and a unique text. Above this line, an
+# explanatory text should be placed. Each line of this text must start with '#* '. This 
+# text is then used to compose the information on what is happening.
