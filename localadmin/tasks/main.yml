@@ -1,0 +1,35 @@
+---
+# Set or update the local administator's password hash.
+
+- name: "Check that the private group exists and has a uidnumber of 1000."
+  group:
+    name: "localadmin"
+    gid: 1000
+    state: present
+ 
+- name: "Check that the account exists and that localadmin is in the sudo group."
+  user:
+    name: "localadmin"
+    uid: 1000
+    group: "localadmin"
+    groups: "sudo"
+    append: yes
+    home: "/home/localadmin"
+    createhome: yes
+
+- name: "Ensure the local administrator has an .ssh directory and set any keys as only ones."
+  authorized_key:
+    exclusive: yes
+    state: present
+    user: "localadmin"
+    manage_dir: yes
+    key: "{{ its_localadmin.sshkeys|join('\n') }}"
+  when: its_localadmin.sshkeys|length > 0
+
+- name: "Setting the local administrator password if given."
+  user:
+    name: "localadmin"
+    password: "{{ its_localadmin.pwhash }}"
+    update_password: always
+  when: its_localadmin.pwhash != ''
+

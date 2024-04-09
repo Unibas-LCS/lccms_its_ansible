@@ -1,0 +1,11 @@
+[Unit]
+Description=Run ansible on this client periodically.
+Wants=ansible.timer
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/bin/bash /usr/.ansible/ansibleRun.sh
+
+[Install]
+WantedBy=multi-user.target

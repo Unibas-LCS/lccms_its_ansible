@@ -1,0 +1,10 @@
+---
+its_ssh:
+  sshd:
+    PermitRootLogin: "without-password"
+  ssh:
+    HashKnownHosts: "yes "
+    GSSAPIAuthentication: "yes "
+    GSSAPIDelegateCredentials: "no "
+    ForwardX11: "yes "
+

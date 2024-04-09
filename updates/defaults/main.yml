@@ -1,0 +1,4 @@
+---
+its_updates:
+# The management level of this machine: managed, self managed, and unmanaged.
+  managementLevel: "{{ lccms.configuration }}"

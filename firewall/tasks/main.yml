@@ -1,0 +1,40 @@
+---
+# The firewall is enabled per default.
+# All incoming trafic is blocked.
+# All outgoing trafic is allowed.
+- name: "Install UFW if not installed."
+  apt:
+    state: present
+    name: "ufw"
+
+- name: "Enable UFW and deny all incoming, allow all outgoing."
+  community.general.ufw:
+    state: enabled
+    direction: "incoming"
+    default: deny
+  when: its_firewall.state == 'block'
+
+- name: "Enable UFW and allow all traffic."
+  community.general.ufw:
+    state: enabled
+    direction: "incoming"
+    default: allow
+  when: its_firewall.state == 'allow'
+
+- name: "Allow incoming traffic for these apps:</br>{{ its_firewall.apps | join('</br>') }}"
+  community.general.ufw:
+    name: "{{ item }}"
+    default: allow
+  loop: "{{ its_firewall.apps }}"
+  when: its_firewall.apps|length > 0
+
+- name: "Install 'remote' program to allow normal users to enable/disable ssh access."
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: "sudo_ufw",        dst: "/etc/sudoers.d/ufw",        mode: "u=rw,g=r,o-rwx" }
+    - { src: "remote",          dst: "/usr/sbin/remote",          mode: "u=rwx,g=rx,o=rx"}

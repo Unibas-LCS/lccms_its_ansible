@@ -1,0 +1,9 @@
+---
+its_mta:
+  hostname: "{{ lccms.host }}"
+  system: "{{ lccms.computerType }}"
+  mail_aliases:
+    -
+      alias: root
+      target: "{{ lccms.reportMailTo }}"
+

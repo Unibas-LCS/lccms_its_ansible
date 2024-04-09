@@ -1,0 +1,5 @@
+---
+- name: "Clean up any dirty objects from no longer used configurations."
+  debug:
+    msg: "nothing to do!"
+  when: its_cleanup.execute

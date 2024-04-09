@@ -1,0 +1,26 @@
+---
+# Remove the cloud configuration and ensure we can use ssh with password login.
+- name: "Remove cloud init in Ubuntu."
+  package:
+    name: "cloud-init"
+    state: absent
+  when: ansible_distribution == "Ubuntu"
+
+- name: "Make sure /etc/cloud exists, even if package is not installed."
+  file:
+    path: /etc/cloud
+    state: directory
+  when: ansible_distribution == "Ubuntu"
+
+- name: "Add 'disabled' file to /etc/cloud."
+  copy:
+    dest: /etc/cloud/cloud-init.disabled
+    content: ""
+  when: ansible_distribution == "Ubuntu"
+
+# If it exists, remove the file 50-cloud-init.conf in /etc/ssh/sshd_config.d/
+- name: "Remove the sshd cloud configuration. It inhibits password logins."
+  file:
+    path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+    state: absent
+  when: ansible_distribution == "Ubuntu"

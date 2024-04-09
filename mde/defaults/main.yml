@@ -1,0 +1,9 @@
+---
+its_mde:
+  defender_group_tag: 'ITS'
+  exclude:
+    directories:
+    - "/proc"
+    - "/sys"
+    - "/dev"
+    files: []

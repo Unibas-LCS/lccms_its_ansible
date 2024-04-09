@@ -1,0 +1,60 @@
+---
+  - name: |
+      We are required to have the Microsoft Defender installed and running.</br>
+      Create MDATP directory (/etc/opt/microsoft/mdatp/managed), if necessary.
+    file:
+      path: /etc/opt/microsoft/mdatp/managed
+      state: directory
+      mode: 0755
+      owner: root
+      group: root
+
+  - name: "Creating Onboarding Configuration from the template."
+    template:
+      src: mdatp_onboard.json.j2
+      dest: /etc/opt/microsoft/mdatp/mdatp_onboard.json
+      mode: 0600
+      owner: root
+      group: root
+
+  - name: "Creating Managed Configuration from the default file."
+    template:
+      src: mdatp_managed.json.j2
+      dest: /etc/opt/microsoft/mdatp/managed/mdatp_managed.json
+      mode: 0600
+      owner: root
+      group: root
+
+  - name: "Add Microsoft APT key by downloading it from the microsoft packages server."
+    apt_key:
+      id: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+      url: https://packages.microsoft.com/keys/microsoft.asc
+      state: present
+
+  - name: "Add Microsoft apt repository for MDATP."
+    apt_repository:
+      repo: deb [arch=arm64,armhf,amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+      update_cache: yes
+      state: present
+      filename: microsoft-prod
+
+  - name: "Install Microsoft Defender."
+    apt:
+      name: mdatp
+      state: latest
+
+  - name: |
+      Install weekly defender quick scan cronjob if not set up.</br>
+      Any output should go to the file /var/log/mdatp_cron_job.log
+    cron:
+      name: "Weekly quick scan defender"
+      minute: "0"
+      hour: "2"
+      weekday: "sat"
+      user: root
+      job: "/bin/mdatp scan quick >> /var/log/mdatp_cron_job.log"
+
+  - name: "Install the mdatp_cron_job logrotate file."
+    copy:
+      src: "mdatp_cron_job"
+      dest: "/etc/logrotate.d/mdatp_cron_job"

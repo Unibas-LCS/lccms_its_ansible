@@ -1,0 +1,37 @@
+---
+- setup:
+  register: setup_res
+
+- name: |
+    Check system state. (Ignore error).</br>
+    This is a multiline text block.</br>
+    This is the third and last line.
+  command: 'systemctl is-system-running'
+  changed_when: false
+  failed_when: false
+  register: 'systemd_state'
+
+- name: "Report bad system state. (Ignore error)"
+  fail:
+    msg: "systemctl reports state {{ systemd_state.stdout }}. Please check"
+  when: 'systemd_state.rc != 0'
+  ignore_errors: yes
+
+- name: "Collect ansible, package, and shell data."
+  ansible.builtin.command: "/usr/bin/dpkg -l --no-pager"
+  register: package_list
+
+- name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
+  uri:
+    url: "{{ its_report.server }}"
+    method: POST
+    body_format: form-urlencoded
+    body:
+      facts: "{{ setup_res|to_json }}"
+      shells: "{{ lookup('file', '/etc/shells/') }}"
+      packages: "{{ package_list.stdout }}"
+      unit: "{{ its_report.unit }}"
+    status_code: 200
+  changed_when: false
+  failed_when: false
+  ignore_errors: yes

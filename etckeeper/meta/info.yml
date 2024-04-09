@@ -1,0 +1,17 @@
+---
+user_info:
+  'etckeeper: install git.': |
+    Etckeeper will install a git repository for the /etc/ directory. This allows saving
+    a version of the data before running ansible. If anything goes wrong, an older version
+    of any file can be retrieved, thus restoring functionality.
+
+    Install git if not installed.
+  'etckeeper: install etckeeper.': |
+    Install the etckeeper package if not installed.
+  'etckeeper: deploy debian etckeeper.conf.': |
+    Copy the etckeeper default konfiguration for debian systems.
+  'etckeeper: initialize etckeeper.': |
+    Initialize the repository if not done.
+  'etckeeper: commit unstaged changes in etc before ansible runs.': |
+    Commit unstaged changes in /etc/ before ansible runs.
+...

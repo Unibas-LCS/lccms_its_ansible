@@ -1,0 +1,120 @@
+---
+# Set up and maintain the list of users who may access the machine.
+#
+# This playbook will manage users who have a gecos ending with the value of the ',ansible.
+#
+# Each entry ''its_users.users'' must be a record with the following keys, of which some are optional:
+# ^Key        ^Required  ^Comment  ^
+# |uid        |yes       |The unique short name id of the user.  |
+# |gid        |yes       |The unique main group name.  |
+# |uidnumber  |yes       |The unique id of the user.  |
+# |gidnumber  |yes       |The unique id of the main group.  |
+# |gecos      |yes       |Additional information, normally the user's full name followed by three commas.\\ (user's full name, building and room, office phone, home phone, dmi_users.org_unit)  |
+# |home       |yes       |The full path to the user's home directory.  |
+# |shell      |yes       |The full path to the user's preferred shell.  |
+# |groups     |yes       |the list (array) of group names of which the user belongs to in addition to the main group.  |
+# |mode       |no        |The quoted octal value used to initially set the mode of the user's home directory.  |
+# |quota      |no        |The amount of allowable disk space for the user's home.  |
+# |localhome  |no        |Only used if the user's home is located elsewhere and automounted to a standard path.  |
+# |passwd     |no        |Only set if a password is to be set on creation of the account. This is ignored if already set. Defaults to *.  |
+# An example:
+# <code>
+# - uid: frank
+#   gid: dmi-dmi
+#   uidnumber: "3387"
+#   gidnumber: "1355"
+#   gecos: Robert Frank,,
+#   groups:
+#   - adm
+#   - sudo
+#   home: /home/frank
+#   shell: /bin/bash
+#   mode: "0700"
+# </code>
+
+
+- name: "Make sure the local user commands exist."
+  package:
+    name: libuser
+    state: present
+
+# Once the 'local' command in the user module works properly, this will no longer be neccessary.
+- name: "Check if passwd: sssd is in nsswitch."
+  command: "/bin/egrep 'passwd:(.*)sss' /etc/nsswitch.conf"
+  failed_when: false
+  changed_when: false
+  register: have_sssd
+
+- name: "Load all 'ansible'' users from /etc/passwd (ignore error)"
+  command: "/bin/grep ',ansible:' /etc/passwd"
+  changed_when: false
+  register: 'ansible_passwd_out'
+  ignore_errors: yes
+
+- name: "If on a ZFS system and separate file systems for each user, create the homes now."
+  zfs:
+    name: "{{ item.home[1:]] }}"
+    userquota: "{{ item.quota|default(omit) }}"
+    state: present
+  with_items: "{{ its_users.users }}"
+  when: 'its_users.create_homes == "zfs"'
+
+# Once the 'local' command in the user module works properly, this will no longer be neccessary.
+- name: "Stop sssd to manipulate the password database. (ignore error and state change)"
+  service:
+    name: "sssd"
+    state: stopped
+  ignore_errors: yes
+  changed_when: no
+  when: have_sssd.rc == 0
+
+- name: "Create any missing groups."
+  group:
+    name: "{{ item.gid|lower }}"
+    gid: "{{ item.gidnumber }}"
+    state: "present"
+  with_items: "{{ its_users.users }}"
+
+- name: "Create the passwd and hash entries."
+  user:
+    comment: "{{ item.gecos }},ansible"
+    createhome: "{{ its_users.create_homes == 'auto' }}"
+    group: "{{ item.gid|lower }}"
+    groups: "{{ item.groups|join(\",\") }}"
+    append: "{{ its_users.append_groups }}"
+    home: "{{ item.home }}"
+    name: "{{ item.uid }}"
+    password: "{{ item.passwd|default('*') }}"
+    update_password: "on_create"
+    shell: "{{ item.shell }}"
+    state: "present"
+    uid: "{{ item.uidnumber }}"
+#    local: true   # The local command does not honour the -m flag for creating the homes, only the -M for NOT creating homes.
+  with_items: "{{ its_users.users }}"
+  register: homes_created
+
+- name: "Remove old ansible managed users"
+  user:
+    name: "{{ item.split(\":\")[0] }}"
+    state: absent
+  with_items: '{{ansible_passwd_out.stdout_lines}}'
+  when: "item.split(':')[0] not in its_users.users|map(attribute='uid')|list()"
+
+# Once the 'local' command in the user module works properly, this will no longer be neccessary.
+- name: "Start sssd to manipulate the password database. (ignore error and state change)"
+  service:
+    name: "sssd"
+    state: started
+  ignore_errors: yes
+  changed_when: no
+  when: have_sssd.rc == 0
+
+- name: "Set correct access for the homes if just created."
+  file:
+    path: "{{ item.home }}"
+    mode: "{{ item.mode|default('0750') }}"
+    group: "{{ item.gidnumber }}"
+    owner: "{{ item.uidnumber }}"
+    state: "directory"
+  with_items: "{{ homes_created.results|selectattr('changed')|map(attribute='item')|list }}"
+  when: "its_users.create_homes != 'before'"

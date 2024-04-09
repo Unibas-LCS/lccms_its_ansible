@@ -1,0 +1,9 @@
+---
+parameters:
+  public:
+  private:
+    its_cleanup:
+      execute:
+        kind: boolean
+        default: false
+        comment: Whether or not this should be run.

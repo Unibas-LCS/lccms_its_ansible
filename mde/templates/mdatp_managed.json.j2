@@ -1,0 +1,34 @@
+{
+   "antivirusEngine":{
+      "exclusionsMergePolicy":"merge",
+      "exclusions":[
+{% for dir in its_mde.exclude.directories %}
+        {
+           "$type":"excludedPath",
+           "isDirectory":true,
+           "path":"{{ dir }}"
+        },
+{% endfor %}
+{% for file in its_mde.exclude.files %}
+        {
+           "$type":"excludedPath",
+           "isDirectory":false,
+           "path":"{{ file }}"
+        },
+{% endfor %}
+        {
+           "$type":"excludedPath",
+           "isDirectory":false,
+           "path":"/var/log"
+        }
+      ]
+   },
+   "edr":{
+      "tags":[
+         {
+            "key":"GROUP",
+            "value":"{{ its_mde.defender_group_tag }}"
+         }
+      ]
+   }
+}

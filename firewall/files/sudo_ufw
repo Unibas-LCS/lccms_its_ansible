@@ -1,0 +1,4 @@
+# This will grant all users to execute ufw to enable/disable ssh access.
+ALL ALL=(root) NOPASSWD: /usr/sbin/ufw allow ssh
+ALL ALL=(root) NOPASSWD: /usr/sbin/ufw deny ssh
+

@@ -1,0 +1,9 @@
+---
+parameters:
+  public:
+    its_report:
+      server:
+        kind: string
+        default: ""
+        comment: The full URI of the host to which any reports are to be sent.
+  private: ~

@@ -1,0 +1,43 @@
+---
+# Change the login screen to either list all users (local users only) or the name and password field.
+# This will modify the settings for
+#   * lightdm
+#   * gnome
+
+# This is for lightdm
+- name: "Check if we have lightdm."
+  stat:
+    path: "/etc/lightdm/lightdm.conf.d"
+  register: check_lightdm
+  become: true
+
+- name: "Configure lightdm to ask for user."
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+    force: no
+#  notify: restart lightdm
+  when: check_lightdm.stat.exists
+  with_items:
+    - { src: "50-unity-greeter.conf", dest: "/etc/lightdm/lightdm.conf.d/50-unity-greeter.conf", mode: "0644" }
+
+# This is for gnome (gdm3)
+- name: "Check if we have gnome."
+  stat:
+    path: "/etc/gdm3/greeter.dconf-defaults"
+  register: check_gdm
+
+- name: "Ensure we have just the login fields for gnome."
+  become: yes
+  lineinfile:
+    path: "/etc/gdm3/greeter.dconf-defaults"
+    regexp: '^#?\s*{{ item.regex }}'
+    line: "{{ item.replace }}"
+    state: present
+  with_items:
+    - { regex: '\[org/gnome/login-screen\]', replace: '[org/gnome/login-screen]' }
+    - { regex: 'disable-user-list=true', replace: 'disable-user-list=true' }
+  when: check_gdm.stat.exists

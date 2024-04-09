@@ -1,0 +1,57 @@
+---
+# Set the update mode. The minimal default is security updates enforced.
+
+- name: "Install the unattended-upgrades package. This defaults to security only."
+  package:
+    name: "unattended-upgrades"
+    state: "present"
+
+# Depending on the management level, comment or uncomment lines in the default configuration file
+# /etc/apt/apt.conf.d/50unattended-upgrades.
+
+- name: "Set the distro for unattended updates in /etc/apt/apt.conf.d/50unattended-upgrades."
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: '^(\s*)[/]*\s*("\${distro_id}:\${distro_codename}";)$'
+    line: '\1\2'
+    backrefs: yes
+    state: present
+    insertafter: 'Unattended-Upgrade::Allowed-Origins {'
+
+- name: "Always allow security updates in /etc/apt/apt.conf.d/50unattended-upgrades."
+  ansible.builtin.replace:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: '^(\s*)[/]*\s*(.*-security";)$'
+    replace: '\1\2'
+    after: 'Unattended-Upgrade::Allowed-Origins {'
+    before: '};'
+
+- name: "Set necessary configs in /etc/apt/apt.conf.d/50unattended-upgrades."
+  ansible.builtin.replace:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: "{{ item.regex }}"
+    replace: "{{ item.replace }}"
+  loop:
+    - { regex: '^\s*[/]*\s*(Unattended-Upgrade::Mail ).*$', replace: '\1"root";' }
+    - { regex: '^\s*[/]*\s*(Unattended-Upgrade::Remove-Unused-Dependencies ).*$', replace: '\1"true";' }
+
+# If a managed system, also auto-update all other software.
+- name: "A managed system: allow all updates in /etc/apt/apt.conf.d/50unattended-upgrades."
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: '^(\s*)[/]*\s*("\${distro_id}:\${distro_codename}-updates";)$'
+    line: '  \2'
+    backrefs: yes
+    state: present
+    insertafter: 'Unattended-Upgrade::Allowed-Origins {'
+  when: its_updates.managementLevel == 'managed'
+
+- name: "An unmanaged or self managed system: disable all normal updates in /etc/apt/apt.conf.d/50unattended-upgrades."
+  ansible.builtin.lineinfile:
+    path: /etc/apt/apt.conf.d/50unattended-upgrades
+    regexp: '^(\s*)[/]*\s*("\${distro_id}:\${distro_codename}-updates";)$'
+    line: '//  \2'
+    backrefs: yes
+    state: present
+    insertafter: 'Unattended-Upgrade::Allowed-Origins {'
+  when: its_updates.managementLevel != 'managed'

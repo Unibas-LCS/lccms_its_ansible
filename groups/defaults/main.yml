@@ -1,0 +1,10 @@
+---
+its_groups:
+# The complete list of group names. This is set by a special class.
+# Expects the fields:
+#   name, gidnumber
+  groups:
+  - name: 'unibas-users'
+    gidnumber: 1111
+  - name: 'stud'
+    gidnumber: 1183

@@ -1,0 +1,21 @@
+---
+- name: "Rotate logs daily."
+  lineinfile:
+    dest: "/etc/logrotate.d/rsyslog"
+    line: "\tdaily"
+    insertbefore: "}"
+  notify: 'restart rsyslog'
+
+- name: "Do not rotate logs weekly."
+  lineinfile:
+    dest: "/etc/logrotate.d/rsyslog"
+    regexp: "weekly"
+    state: "absent"
+  notify: 'restart rsyslog'
+
+- name: "Keep 7 days of syslog on system"
+  lineinfile:
+    dest: "/etc/logrotate.d/rsyslog"
+    regexp: '^\s*rotate'
+    line: "\trotate 7"
+  notify: 'restart rsyslog'

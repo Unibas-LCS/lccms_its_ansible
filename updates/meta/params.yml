@@ -1,0 +1,26 @@
+---
+parameters:
+  public:
+    its_updates:
+  private:
+    its_updates:
+      managementLevel:
+        kind: option
+        default: "{{ lccms.configuration }}"
+        options:
+          - value: managed
+            comment: |
+              The system is fully managed.
+              All updates are automatically executed.
+              The user may have sudo rights.
+          - value: self managed
+            comment: |
+              The system is minimally managed.
+              Only security updates are automatically installed.
+              The user must update all software him/herself.
+              At least one user has sudo rights.
+          - value: unmanaged
+            comment: |
+              The system is not managed by ITS at all.
+              The user is fully responsible for the machine.
+        comment: This value is a copy of the global variable lccms.configuration.

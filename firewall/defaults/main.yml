@@ -1,0 +1,4 @@
+---
+its_firewall:
+  state: 'block'
+  apps: []

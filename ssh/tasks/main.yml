@@ -1,0 +1,21 @@
+---
+- name: "Change given SSHD Settings. Others won't be touched:</br>\n{{ its_ssh.sshd  | replace(',', '</br>\n') | replace('{', '') | replace('}', '') | replace(\"'\", '') | replace(':', '') }}"
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: '^#?\s*{{ item.key }}\s+'
+    line: "{{ item.key }} {{ item.value }}"
+  with_dict: '{{ its_ssh.sshd }}'
+  notify: 'restart sshd'
+
+- name: "Do not allow LANG and LC_ in ssh."
+  replace:
+    dest: "/etc/ssh/sshd_config"
+    regexp: '^([^#].*(LANG|LC_).*)$'
+    replace: '#\1'
+
+- name: "Change given SSH Settings. Others won't be touched:</br>\n{{ its_ssh.ssh | replace(',', '</br>\n') | replace('{', '') | replace('}', '') | replace(\"'\", '') | replace(':', '')  }}"
+  lineinfile:
+    dest: "/etc/ssh/ssh_config"
+    regexp: '^#?\s*{{item.key}}\s+'
+    line: "    {{item.key}} {{item.value}}"
+  with_dict: '{{ its_ssh.ssh }}'

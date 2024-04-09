@@ -1,0 +1,120 @@
+#!/bin/bash
+# This script is used to run the linux client configuration management on the client.
+#
+# It will check for the required software, then run ansible and finally report back
+# to the service.
+
+CONFIGURI={{ lccms.configURI }}
+REPORTSURI={{ lccms.requestURI }}
+ROLESURI={{ lccms.rolesURI }}
+ANSIBLEDIR={{ lccms.ansibleDir }}
+ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
+HOST={{ lccms.host }}
+UNIT={{ lccms.unit }}
+
+LOGFILE=/var/log/lccmsrun.log
+ACTIONDIR=/usr/local/man/ansible
+
+out() {
+  echo "$1" | /usr/bin/tee -a $LOGFILE
+}
+outn () {
+  echo -n "$1" | /usr/bin/tee -a $LOGFILE
+}
+
+
+echo "===========================================" >$LOGFILE
+/usr/bin/date >>$LOGFILE
+echo "Initial installation." >>$LOGFILE
+
+OS=`/usr/bin/lsb_release -si | /usr/bin/tr '[A-Z]' '[a-z]'`
+RELEASE=`/usr/bin/lsb_release -sr`
+
+out ""
+out "Fetching the configuration for"
+out "  host: $HOST:"
+out "  unit: $UNIT"
+out "  URI: $CONFIGURI"
+out "  OS: $OS"
+out "  release: $RELEASE"
+out ""
+
+outn "Installing required programs ... "
+if ! /usr/bin/which wget >/dev/null || ! /usr/bin/which curl >/dev/null || ! /usr/bin/which sed >/dev/null
+then
+  out ""
+  if [[ -f /usr/bin/apt ]]
+  then
+    /usr/bin/apt -y install wget curl sed | /usr/bin/tee -a $LOGFILE
+  elif [[ -f /usr/bin/yum ]]
+  then
+    /usr/bin/yum -y install wget curl sed | /usr/bin/tee -a $LOGFILE
+  else
+    out "ERROR: Don't know how to install programs (wget, sed, curl)! Please install manually!"
+    exit 1
+  fi
+fi
+out "done."
+
+outn "Installing ansible as package ... "
+if ! /usr/bin/which ansible >/dev/null
+then
+  out ""
+  if [[ -f /usr/bin/apt ]]
+  then
+    /usr/bin/apt -y install ansible | /usr/bin/tee -a $LOGFILE
+  elif [[ -f /usr/bin/yum ]]
+  then
+    /usr/bin/yum -y install ansible | /usr/bin/tee -a $LOGFILE
+  else
+    out "ERROR: Don't know how to install ansible! Please install manually!"
+    exit 1
+  fi
+fi
+out "done."
+
+outn "Checking the ansible directory ... "
+[ -d $ANSIBLEDIR ] || /usr/bin/mkdir -m $ANSIBLEDIRMODE $ANSIBLEDIR
+out "done."
+cd $ANSIBLEDIR
+
+outn "Updating host playbook ... "
+/usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
+# It's ok to fail, we will just continue with the old one.
+out "done."
+
+# We have the client's playbook, extract the roles and download these.
+[ -d roles ] || /usr/bin/mkdir roles
+cd roles
+outn "Updating roles ... "
+for r in `/usr/bin/sed -n '/roles:/,$!d; / *- /s/ *- //p' ../${HOST}.yml`
+do
+  s=`echo $r | /usr/bin/sed 's/\./\//'`
+  d=`/usr/bin/dirname $s`
+  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}$OS/$RELEASE/${s}/
+  /usr/bin/ln -sf ${s} ${r}
+done
+out "done."
+cd ..
+
+out ""
+out "Running ansible."
+# Now run the playbook. Save the output to a file and also show on screen.
+/usr/bin/ansible-playbook ${HOST}.yml | /usr/bin/tee -a $LOGFILE
+
+# We will write an HTML file on what was done into $ACTIONDIR/actions.html
+# Check that the path exists:
+if [[ ! -d "$ACTIONDIR" ]]
+then
+  /usr/bin/mkdir "$ACTIONDIR"
+fi
+# Send the last log entry to the controller:
+out "Returning log to service and updating report."
+response=$(/usr/bin/curl -s -o /tmp/response.html -w '%{response_code}' --form "host=$HOST" --form "unit=$UNIT" --form "logs=@$LOGFILE" ${REPORTSURI}put/log)
+if [[ $? == 0 && $response == "200" ]]
+then
+  /bin/mv -f /tmp/response.html ${ACTIONDIR}/actions.html
+else
+  /bin/rm -f /tmp/response.html
+fi
+

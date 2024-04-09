@@ -1,0 +1,10 @@
+---
+parameters:
+  public:
+    its_mde:
+      defender_group_tag:
+        kind: string
+        default: ITSC
+        comment: The organisational group to which the machine belongs.
+  private: ~
+

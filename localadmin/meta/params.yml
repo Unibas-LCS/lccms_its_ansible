@@ -1,0 +1,13 @@
+---
+parameters:
+  public: ~
+  private:
+    its_localadmin:
+      pwhash:
+        kind: string
+        default: "{{ lccms.localadminPwHash }}"
+        comment: The hashed password to set for the localadmin user.
+      sshkeys:
+        kind: array
+        default: "{{ lccms.locladminSshKeys }}"
+        comment: The array of SSH keys to install for the local administrator.

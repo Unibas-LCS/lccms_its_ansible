@@ -1,0 +1,28 @@
+---
+parameters:
+  public:
+    its_firewall:
+      state:
+        kind: option
+        default: 'block'
+        comment: The forced state of the firewall. This still allows adding or removing rules as needed.
+        options:
+        - value: 'block'
+          comment: Block all incoming traffic not listed, allow all outgoing.
+        - value: 'allow'
+          comment: Allow all traffic.
+      apps:
+        kind: array
+        default: []
+        comment: The array of application names for which to allow incoming traffic.
+  private:
+    its_firewall:
+      system:
+        kind: option
+        options:
+        - value: 'mobile'
+          comment: The system is not always connected via ethernet.
+        - value: 'workstation'
+          comment: The system is stationary and always connected via ethernet.
+        default: "{{ lccms.computerType }}"
+        comment: The kind of system. This is either mobile or workstation.

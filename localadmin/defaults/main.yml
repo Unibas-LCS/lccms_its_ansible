@@ -1,0 +1,4 @@
+---
+its_localadmin:
+  pwhash: "{{ lccms.localadminPwHash }}"
+  sshkeys: "{{ lccms.localadminSshKeys }}"

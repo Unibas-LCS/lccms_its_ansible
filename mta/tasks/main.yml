@@ -1,0 +1,59 @@
+---
+# Set up the basic mail environment (postifx).
+# This uses the variables
+#   * dmi_base.mail_aliases
+
+- name: "Copy root-urz gpg key."
+  copy:
+    src: "root-urz.gpg"
+    dest: "/var/local/root-urz.gpg"
+
+- name: "Import root-urz gpg key (root)."
+  command: 'gpg --import /var/local/root-urz.gpg'
+  register: 'gpg_import_result'
+  changed_when: '"unchanged: 1" not in gpg_import_result.stderr'
+
+- name: "Configure /etc/aliases."
+  lineinfile:
+    dest: "/etc/aliases"
+    regexp: '^#?{{ item.alias }}\s*:'
+    line: "{{ item.alias }}:\t{{ item.target }}"
+  with_items: '{{ its_mta.mail_aliases }}'
+  notify: 'update aliases'
+
+- name: "Set relayhost in postfix config smtp.unibas.ch for non mobile system."
+  lineinfile:
+    dest: "/etc/postfix/main.cf"
+    regexp: '^#?relayhost ='
+    line: "relayhost = smtp.unibas.ch"
+  notify: 'restart postfix'
+  when: its_mta.system != "mobile"
+
+- name: "Set relayhost in postfix config smtp-ext.unibas.ch for mobile system."
+  lineinfile:
+    dest: "/etc/postfix/main.cf"
+    regexp: '^#?relayhost ='
+    line: "relayhost = smtp-ext.unibas.ch"
+  notify: 'restart postfix'
+  when: its_mta.system == "mobile"
+
+- name: "Set myhostname for postifx."
+  lineinfile:
+    dest: "/etc/postfix/main.cf"
+    regexp: '^#?myhostname = '
+    line: "myhostname = {{ its_mta.hostname }}"
+  notify: 'restart postfix'
+
+- name: "Check if we have a mailname file."
+  stat:
+    path: "/etc/mailname"
+  register: setup_mailname
+  become: true
+
+- name: "Set mailname on debian systems."
+  lineinfile:
+    dest: "/etc/mailname"
+    regexp: '.*unibas.ch$'
+    line: "{{ its_mta.hostname }}"
+  notify: 'restart postfix'
+  when: setup_mailname.stat.exists

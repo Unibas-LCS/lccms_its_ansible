@@ -1,0 +1,6 @@
+---
+user_info:
+  'its.report: Collect package info.': |
+    Collect some system information and the list of packages installed.
+  'its.report: Send facts to university server. (ignore error)': |
+    Return the collected data to the lccm service.

@@ -1,0 +1,8 @@
+---
+# Ubuntu normally uses the timesyncd, so we only configure this.
+- name: "Configure ntp server for timedated."
+  lineinfile:
+    dest: '/etc/systemd/timesyncd.conf'
+    regexp: '^#?NTP='
+    line: 'NTP={% for ntp in its_ntp.servers %} {{ ntp }} {% endfor %}'
+  notify: 'restart timesyncd'

@@ -1,0 +1,4 @@
+---
+user_info:
+  'its.setfqdn: Set the actual hostname to that recorded in the management system.': |
+    Set the actual hostname to what is recorded in the management system if not done.

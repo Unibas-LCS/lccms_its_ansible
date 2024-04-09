@@ -1,0 +1,8 @@
+/var/log/mdatp_cron_job.log {
+  maxsize 10M
+  copytruncate
+  notifempty
+  missingok
+  compress
+  delaycompress
+}

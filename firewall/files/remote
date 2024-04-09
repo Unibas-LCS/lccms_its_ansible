@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+# This script will enable/disable port 22 (SSH) on the firewall
+# using sudo ufw. The sudo requires an appropriate config in /etc/sudoers.d.
+
+case $1 in
+  enable|allow|on) 
+    /usr/bin/sudo /usr/sbin/ufw allow ssh
+    echo "Remote access enabled."
+    ;;
+  disable|forbid|off)
+    /usr/bin/sudo /usr/sbin/ufw deny ssh
+    echo "Remote access disabled."
+    ;;
+  *)
+     echo "Usage: remote enable
+       remote disable" 
+    ;;
+esac
+

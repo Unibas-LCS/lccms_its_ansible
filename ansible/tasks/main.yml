@@ -1,0 +1,66 @@
+---
+# Install the periodically called script, set up timer using system timer.
+# To check if the installation is correct and that the next execution will
+# happen, use the following command:
+#   systemctl list-timers
+# and look for the ansible.timer entry
+#
+- name: "Install the ansible icon."
+  ansible.builtin.copy:
+    src: mdi--ansible.svg
+    dest: /usr/share/icons/
+
+- name: "Install the desktop launcher."
+  ansible.builtin.copy:
+    src: managed.desktop
+    dest: /usr/share/applications/ansible-managed.desktop
+
+- name: "Install the ansible execution script."
+  ansible.builtin.template:
+    src: ansibleRun.sh
+    dest: /usr/.ansible/
+  when: its_ansible.managed
+  
+- name: "Install the ansible service."
+  ansible.builtin.copy:
+    src: ansible.service
+    dest: /etc/systemd/system/
+  when: its_ansible.managed
+
+- name: "Define the repetition."
+  ansible.builtin.copy:
+    src: ansible.timer
+    dest: /etc/systemd/system/
+  when: its_ansible.managed
+
+- name: "Disable the timer if not managed."
+  ansible.builtin.systemd:
+    name: ansible.timer
+    enabled: false
+    state: "stopped"
+  register: stop_service
+  when: not its_ansible.managed
+  failed_when:
+    - stop_service.failed == true
+    - '"Could not find the requested service ansible.timer: host" not in stop_service.msg'
+
+- name: "Enable/disable the execution of the ansible script."
+  ansible.builtin.systemd:
+    name: ansible
+    enabled: "{{ its_ansible.managed }}"
+    daemon_reload: true
+  register: stop_service
+  failed_when:
+    - stop_service.failed == true
+    - '"Could not find the requested service ansible: host" not in stop_service.msg'
+
+## This, unfortunately, also executes the timer immediately. Not what we want!
+#- name: "Set up for hourly execution."
+#  ansible.builtin.systemd:
+#    name: ansible.timer
+#    enabled: true
+
+# This allows enabling and activating the timer in one call without running the script
+- name: "Set up for hourly execution."
+  ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
+  when: its_ansible.managed

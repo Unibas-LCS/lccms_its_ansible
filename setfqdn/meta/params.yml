@@ -1,0 +1,23 @@
+---
+parameters:
+  public: ~
+  private:
+    its_fqdn:
+      name:
+        kind: string
+        default: "{{ lccms.host }}"
+        immutable: true
+        comment: The fully qualified host name.
+      kind:
+        kind: option
+        default: "{{ lccms.computerType }}"
+        options:
+        - value: mobile
+          comment: This device is mobile and not always connected to the network and
+            not always on.
+        - value: workstation
+          comment: This device is stationary and always connected to the network but
+            not always on.
+        comment: The kind of device being configured.
+
+...

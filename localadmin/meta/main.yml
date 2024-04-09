@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Robert Frank
+  description: Linux Client Configuration Management
+  license: MIT
+  min_ansible_version: 1.0
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+  categories:
+  - system
+dependencies: []

@@ -1,0 +1,6 @@
+---
+its_ntp:
+  servers:
+    - 'ntp1.unibas.ch'
+    - 'ntp2.unibas.ch'
+

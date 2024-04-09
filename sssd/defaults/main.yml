@@ -1,0 +1,5 @@
+---
+its_sssd:
+# Define the method of authentication and authorisation. Values are: local, passwd, <group>, any
+# where <group> is any AD group available.
+  users_allow: 'any'

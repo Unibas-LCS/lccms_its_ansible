@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to run the ansible script every hour.
+
+[Timer]
+Unit=ansible.service
+OnCalendar=*-*-* *:15:00
+Persistent=True
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,27 @@
+---
+parameters:
+  public: ~
+  private:
+    its_mta:
+      hostname:
+        kind: string
+        default: "{{ lccms.host }}"
+        comment: the FQDN to use for the MTA configuration.
+      system:
+        kind: option
+        options:
+        - value: 'mobile'
+          comment: The system is not always connected via ethernet.
+        - value: 'workstation'
+          comment: The system is stationary and always connected via ethernet.
+        default: "{{ lccms.computerType }}"
+        comment: The kind of system. This is either mobile or workstation.
+      mail_aliases:
+        kind: records
+        fields:
+          - name: alias
+            kind: string
+            comment: The designation which to set an alias for.
+          - name: target
+            kind: string
+            comment: The alias to set for the designation.
