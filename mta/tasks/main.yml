@@ -1,7 +1,10 @@
 ---
 # Set up the basic mail environment (postifx).
-# This uses the variables
-#   * dmi_base.mail_aliases
+
+- name: "Install postifx"
+  apt: 
+    name: postfix
+    state: present
 
 - name: "Copy root-urz gpg key."
   copy:
