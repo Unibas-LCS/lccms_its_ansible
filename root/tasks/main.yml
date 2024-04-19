@@ -1,0 +1,11 @@
+---
+# Set or update the root ssh keys.
+
+- name: "Ensure root has an .ssh directory and set any keys as only ones."
+  authorized_key:
+    exclusive: yes
+    state: present
+    user: "root"
+    manage_dir: yes
+    key: "{{ its_root.sshkeys|join('\n') }}"
+  when: its_localadmin.sshkeys|length > 0
