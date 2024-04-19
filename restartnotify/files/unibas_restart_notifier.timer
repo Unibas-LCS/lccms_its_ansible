@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer to run the restartnotify script every hour.
+
+[Timer]
+Unit=unibas_restart_notifier.service
+OnCalendar=*:0/15
+Persistent=True
+
+[Install]
+WantedBy=timers.target

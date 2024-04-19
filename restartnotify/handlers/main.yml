@@ -1,0 +1,22 @@
+---
+  - name: enable unibas_restart_notifier_trigger path
+    systemd:
+      name: unibas_restart_notifier_trigger.path
+      daemon_reload: true
+      enabled: true
+
+  - name: start unibas_restart_notifier_trigger path
+    systemd:
+      name: unibas_restart_notifier_trigger.path
+      state: started
+
+  - name: enable unibas_restart_notifier timer
+    systemd:
+      name: unibas_restart_notifier.timer
+      daemon_reload: true
+      enabled: true
+
+  - name: start unibas_restart_notifier timer
+    systemd:
+      name: unibas_restart_notifier.timer
+      state: started

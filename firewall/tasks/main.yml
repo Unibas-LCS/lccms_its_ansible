@@ -12,14 +12,14 @@
     state: enabled
     direction: "incoming"
     default: deny
-  when: its_firewall.state == 'block'
+  when: its_firewall.state == "block"
 
 - name: "Enable UFW and allow all traffic."
   community.general.ufw:
     state: enabled
     direction: "incoming"
     default: allow
-  when: its_firewall.state == 'allow'
+  when: its_firewall.state == "allow"
 
 - name: "Allow incoming traffic for these apps:</br>{{ its_firewall.apps | join('</br>') }}"
   community.general.ufw:

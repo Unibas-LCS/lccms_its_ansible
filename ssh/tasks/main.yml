@@ -1,4 +1,9 @@
 ---
+- name: "Install openssh-server"
+  apt:
+    name: openssh-server
+    state: present
+
 - name: "Change given SSHD Settings. Others won't be touched:</br>\n{{ its_ssh.sshd  | replace(',', '</br>\n') | replace('{', '') | replace('}', '') | replace(\"'\", '') | replace(':', '') }}"
   lineinfile:
     dest: "/etc/ssh/sshd_config"

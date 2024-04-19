@@ -1,0 +1,5 @@
+[Unit]
+Description="Alert user to do a restart because there was a kernel update."
+ 
+[Service]
+ExecStart=/usr/local/share/restartnotify/unibas_restart_notifier_trigger.sh
