@@ -19,6 +19,7 @@
   ansible.builtin.template:
     src: ansibleRun.sh
     dest: /usr/.ansible/
+    mode: 0744
   when: its_ansible.managed
   
 - name: "Install the ansible service."

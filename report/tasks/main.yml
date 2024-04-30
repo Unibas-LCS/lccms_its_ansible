@@ -19,6 +19,7 @@
 
 - name: "Collect ansible, package, and shell data."
   ansible.builtin.command: "/usr/bin/dpkg -l --no-pager"
+  changed_when: false
   register: package_list
 
 - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
