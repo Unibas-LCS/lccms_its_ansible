@@ -11,7 +11,6 @@
     src: "fail2ban-default.conf"
     dest: "/etc/fail2ban/jail.d/its.conf"
   notify: 'restart fail2ban'
-  become: yes
 
 - name: "Setup fail2ban to allow 10 sshd login tries (with sssd and unix login this leads to 5 tries)."
   copy:
@@ -22,7 +21,7 @@
 - name: "Setup fail2ban to allow 10 ssh login tries (with krb5 and unix login this leads to 5 tries)."
   copy:
     src: "fail2ban-ssh.conf"
-    dest: "/etc/fail2ban/jail.d/its-sshd.conf"
+    dest: "/etc/fail2ban/jail.d/its-ssh.conf"
   notify: 'restart fail2ban'
 
 - name: "Make sure fail2ban is running."
