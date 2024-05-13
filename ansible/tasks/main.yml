@@ -64,4 +64,5 @@
 # This allows enabling and activating the timer in one call without running the script
 - name: "Set up for hourly execution."
   ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
+  changed_when: false
   when: its_ansible.managed

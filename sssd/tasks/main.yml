@@ -52,17 +52,14 @@
     - "/etc/sssd"
 
 - name: "Copy the configuration files if not local users only."
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode }}"
+  template:
+    src: "sssd.conf.j2"
+    dest: "/etc/sssd/sssd.conf"
+    mode: 0600
     owner: root
     group: root
-    force: yes
   become: true
   when: 'its_sssd.users_allow != "local"'
-  with_items:
-    - { src: "adsssd.conf", dest: "/etc/sssd/sssd.conf", mode: "0600" }
 
 - name: "Make sure sssd packages are installed if not local users only."
   package:
@@ -101,26 +98,6 @@
     - passwd
     - shadow
     - group
-
-- name: "If only users of a given GROUP, uncomment the access filter in the ssd config."
-  lineinfile:
-    path: "/etc/sssd/sssd.conf"
-    backrefs: yes
-    regexp: '^[^s]*simple_allow_groups.*$'
-    line: 'simple_allow_groups = {{ its_sssd.users_allow }}'
-    state: present
-  become: yes
-  when: 'its_sssd.users_allow not in ["local", "passwd", "any"]'
-
-- name: "If passwd or all users, comment the access filter in the sssd config."
-  lineinfile:
-    path: "/etc/sssd/sssd.conf"
-    backrefs: yes
-    regexp: '^[^s]*simple_allow_groups(.*)$'
-    line: '#simple_allow_groups\1'
-    state: present
-  become: yes
-  when: 'its_sssd.users_allow in ["passwd", "any"]'
 
 - name: "Remove sss from nsswitch unless passwd, group, or shadow."
   replace:
