@@ -1,0 +1,15 @@
+---
+- name: "Check if AnyConnect has already been uninstalled once"
+  command: "/bin/ls /root/unibas_anyconnect_uninstalled"
+  register: anyconnect_already_uninstalled
+
+- name: "Uninstall AnyConnect once"
+  command: "/opt/cisco/anyconnect/bin/vpn_uninstall.sh"
+  register: anyconnect_uninstalled
+  when: anyconnect_already_uninstalled is failed
+
+- name: "Create file to indicate AnyConnect has been uninstalled"
+  file:
+    path: /root/unibas_anyconnect_uninstalled
+    state: touch
+  when: anyconnect_uninstalled is changed
