@@ -3,7 +3,7 @@ its_sssd:
 # Define the method of authentication and authorisation. Values are: local, passwd, <group>, any
 # where <group> is any AD group available.
   users_allow: 'any'
-  denied_ad_groups:
-  allowed_ad_groups:
-  allowed_ad_users:
+  denied_ad_groups: ~
+  allowed_ad_groups: ~
+  allowed_ad_users: ~
   ldap_user_gid_number: gidNumber
