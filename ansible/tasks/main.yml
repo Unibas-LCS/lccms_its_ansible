@@ -19,6 +19,7 @@
   ansible.builtin.template:
     src: ansibleRun.sh
     dest: /usr/.ansible/
+    mode: 0744
   when: its_ansible.managed
   
 - name: "Install the ansible service."
@@ -63,4 +64,5 @@
 # This allows enabling and activating the timer in one call without running the script
 - name: "Set up for hourly execution."
   ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
+  changed_when: false
   when: its_ansible.managed

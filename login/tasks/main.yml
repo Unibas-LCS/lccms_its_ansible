@@ -1,43 +1,34 @@
 ---
-# Change the login screen to either list all users (local users only) or the name and password field.
-# This will modify the settings for
-#   * lightdm
-#   * gnome
-
-# This is for lightdm
-- name: "Check if we have lightdm."
-  stat:
-    path: "/etc/lightdm/lightdm.conf.d"
-  register: check_lightdm
-  become: true
-
-- name: "Configure lightdm to ask for user."
-  copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: "{{ item.mode }}"
-    owner: root
-    group: root
-    force: no
-#  notify: restart lightdm
-  when: check_lightdm.stat.exists
-  with_items:
-    - { src: "50-unity-greeter.conf", dest: "/etc/lightdm/lightdm.conf.d/50-unity-greeter.conf", mode: "0644" }
-
-# This is for gnome (gdm3)
-- name: "Check if we have gnome."
-  stat:
-    path: "/etc/gdm3/greeter.dconf-defaults"
-  register: check_gdm
-
-- name: "Ensure we have just the login fields for gnome."
-  become: yes
+- name: "Ensure we have just the login fields on the login screen"
   lineinfile:
     path: "/etc/gdm3/greeter.dconf-defaults"
-    regexp: '^#?\s*{{ item.regex }}'
-    line: "{{ item.replace }}"
-    state: present
-  with_items:
-    - { regex: '\[org/gnome/login-screen\]', replace: '[org/gnome/login-screen]' }
-    - { regex: 'disable-user-list=true', replace: 'disable-user-list=true' }
-  when: check_gdm.stat.exists
+    regexp: 'disable-user-list='
+    line: 'disable-user-list=true'
+
+- name: "Copy Logo/Banner file in place"
+  copy:
+    src: banner_loginscreen_ubuntu.png
+    dest: /usr/share/backgrounds/banner_loginscreen_ubuntu.png
+    owner: root
+    group: root
+    mode: '0444'
+
+- name: "Enable Logo/Banner"
+  lineinfile:
+    path: "/etc/gdm3/greeter.dconf-defaults"
+    regexp: "logo="
+    line: "logo='/usr/share/backgrounds/banner_loginscreen_ubuntu.png'"
+
+- name: "Copy script to change background color in place"
+  copy:
+    src: ubuntu-gdm-set-background
+    dest: /root/ubuntu-gdm-set-background
+    owner: root
+    group: root
+    mode: '0770'
+
+- name: "Set login screen background color to Anthrazit"
+  command:
+    cmd: "/root/ubuntu-gdm-set-background --color \\#2D373C"
+    creates: /usr/local/share/gnome-shell/custom-gdm
+  ignore_errors: true

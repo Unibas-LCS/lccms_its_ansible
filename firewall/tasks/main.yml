@@ -24,7 +24,7 @@
 - name: "Allow incoming traffic for these apps:</br>{{ its_firewall.apps | join('</br>') }}"
   community.general.ufw:
     name: "{{ item }}"
-    default: allow
+    rule: allow
   loop: "{{ its_firewall.apps }}"
   when: its_firewall.apps|length > 0
 

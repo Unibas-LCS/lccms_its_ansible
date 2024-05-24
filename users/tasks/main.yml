@@ -45,7 +45,7 @@
   changed_when: false
   register: have_sssd
 
-- name: "Load all 'ansible'' users from /etc/passwd (ignore error)"
+- name: "Load all 'ansible' users from /etc/passwd (ignore error)"
   command: "/bin/grep ',ansible:' /etc/passwd"
   changed_when: false
   register: 'ansible_passwd_out'
