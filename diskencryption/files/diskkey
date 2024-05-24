@@ -1,0 +1,24 @@
+#!/bin/bash
+# This script will allow a user to set or change the disk encyption key (password) for slot 1
+
+DISK=`/usr/bin/cut -d" " -f1 /etc/crypttab`
+if [ ! -b /dev/$DISK ]
+then
+  DISK=${DISK%_?????}
+fi
+
+case $1 in
+  set)
+    echo "Please enter the administrator's password when propmted for an existing and remaining passphrase."
+    /usr/bin/sudo /usr/sbin/cryptsetup luksKillSlot /dev/$DISK 2 2>/dev/null
+    /usr/bin/sudo /usr/sbin/cryptsetup --key-slot=2 luksAddKey /dev/$DISK
+    ;;
+  change|update)
+    /usr/bin/sudo /usr/sbin/cryptsetup --key-slot=2 luksChangeKey /dev/$DISK
+    ;;
+  *)
+    echo "Usage: diskkey set
+    diskkey update"
+    ;;
+esac
+

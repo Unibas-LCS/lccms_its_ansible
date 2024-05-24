@@ -1,0 +1,4 @@
+# This will grant all users to execute cryptsetyp to set or change the user password in slot 2.
+ALL ALL=(root) NOPASSWD: /usr/sbin/cryptsetup luksKillSlot /dev/* 2
+ALL ALL=(root) NOPASSWD: /usr/sbin/cryptsetup --key-slot=2 luksAddKey /dev/*
+ALL ALL=(root) NOPASSWD: /usr/sbin/cryptsetup --key-slot=2 luksChangeKey /dev/*
