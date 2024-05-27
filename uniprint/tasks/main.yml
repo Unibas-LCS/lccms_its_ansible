@@ -13,6 +13,7 @@
     state: present
   with_items:
     - smbclient
+    - cups
   when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
 
 - name: "Install debian packages for uniprint."
