@@ -1,7 +1,7 @@
 ---
-# Set up the basic mail environment (postifx).
+# Set up the basic mail environment (postfix).
 
-- name: "Install postifx"
+- name: "Install postfix"
   apt: 
     name: postfix
     state: present
@@ -40,7 +40,7 @@
   notify: 'restart postfix'
   when: its_mta.system == "mobile"
 
-- name: "Set myhostname for postifx."
+- name: "Set myhostname for postfix."
   lineinfile:
     dest: "/etc/postfix/main.cf"
     regexp: '^#?myhostname = '
