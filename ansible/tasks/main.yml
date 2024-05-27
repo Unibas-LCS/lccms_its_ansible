@@ -5,6 +5,11 @@
 #   systemctl list-timers
 # and look for the ansible.timer entry
 #
+- name: "Install ansible."
+  apt:
+    name: ansible
+    state: present
+
 - name: "Install the ansible icon."
   ansible.builtin.copy:
     src: mdi--ansible.svg

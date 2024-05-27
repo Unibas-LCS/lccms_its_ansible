@@ -1,0 +1,6 @@
+---
+- name: "Install default packages."
+  apt:
+    name: "{{ its_defaultsoftware.apt }}"
+    state: "present"
+    update_cache: yes

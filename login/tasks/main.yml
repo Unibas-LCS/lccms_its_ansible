@@ -27,7 +27,7 @@
     group: root
     mode: '0770'
 
-- name: "Set login screen background color to Anthrazit"
+- name: "Set login screen background color to Anthrazit (ignore error)"
   command:
     cmd: "/root/ubuntu-gdm-set-background --color \\#2D373C"
     creates: /usr/local/share/gnome-shell/custom-gdm
