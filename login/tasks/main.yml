@@ -1,4 +1,9 @@
 ---
+- name: "Install prerequisites"
+  apt:
+    name: libglib2.0-dev-bin
+    state: present
+
 - name: "Ensure we have just the login fields on the login screen"
   lineinfile:
     path: "/etc/gdm3/greeter.dconf-defaults"
