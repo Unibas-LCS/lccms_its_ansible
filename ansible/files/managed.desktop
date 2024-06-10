@@ -3,7 +3,7 @@
 Verision=1.0
 Type=Application
 Terminal=false
-Exec=/usr/local/etc/showActions
+Exec=/usr/bin/firefox /usr/local/man/ansible/actions.html
 Name=Management Activities
 Comment=Show what the management system did.
 Icon=/usr/share/icons/mdi--ansible.svg
