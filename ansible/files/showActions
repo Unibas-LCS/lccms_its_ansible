@@ -1,3 +1,0 @@
-#!/usr/bin/bash
-/usr/bin/cp -f /usr/local/man/ansible/actions.html ~/Documents/managed.html
-open ~/Documents/managed.html
