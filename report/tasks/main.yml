@@ -2,10 +2,7 @@
 - setup:
   register: setup_res
 
-- name: |
-    Check system state. (Ignore error).</br>
-    This is a multiline text block.</br>
-    This is the third and last line.
+- name: "Check system state. (Ignore error)"
   command: 'systemctl is-system-running'
   changed_when: false
   failed_when: false
