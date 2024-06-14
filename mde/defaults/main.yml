@@ -1,5 +1,6 @@
 ---
 its_mde:
+#  alternative_file: "mdatp_custom.json.j2"
   defender_group_tag: 'ITS'
   exclude:
     directories:

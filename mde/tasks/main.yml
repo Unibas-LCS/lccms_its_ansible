@@ -9,7 +9,7 @@
       owner: root
       group: root
 
-  - name: "Creating Onboarding Configuration from the template."
+  - name: "Copying Onboarding Configuration from the template."
     template:
       src: mdatp_onboard.json.j2
       dest: /etc/opt/microsoft/mdatp/mdatp_onboard.json
@@ -24,6 +24,16 @@
       mode: 0600
       owner: root
       group: root
+    when: its_mde.alternative_file is not defined
+
+  - name: "Creating Managed Configuration from the given file {{ its_mde.alternative_file }}."
+    template:
+      src: "{{ its_mde.alternative_file }}"
+      dest: /etc/opt/microsoft/mdatp/managed/mdatp_managed.json
+      mode: 0600
+      owner: root
+      group: root
+    when: its_mde.alternative_file is defined
 
   - name: "Add Microsoft APT key by downloading it from the microsoft packages server."
     apt_key:
