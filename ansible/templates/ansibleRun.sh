@@ -99,6 +99,9 @@ fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
 
+# All directories of OS and RELEASE are lower case
+LCOS=`echo $OS | /usr/bin/tr '[A-Z]' '[a-z]'`
+LCRELEASE=` echo $RELEASE | /usr/bin/tr '[A-Z]' '[a-z]'`
 # We have the client's playbook, extract the roles and download these.
 [ -d roles ] || /usr/bin/mkdir roles
 cd roles
@@ -107,7 +110,7 @@ for r in `/usr/bin/sed -n '/roles:/,$!d; / *- /s/ *- //p' ../${HOST}.yml`
 do
   s=`echo $r | /usr/bin/sed 's/\./\//'`
   d=`/usr/bin/dirname $s`
-  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}$OS/$RELEASE/${s}/
+  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOS}/${LCRELEASE}/${s}/
   /usr/bin/ln -sf ${s} ${r}
 done
 out "done."
