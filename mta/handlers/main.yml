@@ -1,7 +1,4 @@
 ---
-- name: update aliases
-  command: newaliases
-
 - name: restart postfix
   service:
     name: 'postfix'

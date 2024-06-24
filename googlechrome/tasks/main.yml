@@ -1,5 +1,17 @@
 ---
+- name: Add Google Chrome GPG Key
+  ansible.builtin.get_url:
+    url: https://dl.google.com/linux/linux_signing_key.pub
+    dest: /etc/apt/trusted.gpg.d/google-chrome.asc
+
+- name: Add Google Chrome Repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
+    state: present
+    filename: google-chrome
+
 - name: Install Google Chrome
   apt:
-    deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-    state: present
+    name: "google-chrome-stable"
+    state: "present"
+    update_cache: yes
