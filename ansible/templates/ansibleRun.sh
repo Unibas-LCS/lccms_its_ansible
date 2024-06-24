@@ -11,6 +11,8 @@ ANSIBLEDIR={{ lccms.ansibleDir }}
 ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
 HOST={{ lccms.host }}
 UNIT={{ lccms.unit }}
+LCCMSOS={{ lccms.os | default('') }}
+LCCMSRELEASE={{ lccms.release | default('') }}
 
 LOGFILE=/var/log/lccmsrun.log
 ACTIONDIR=/usr/local/man/ansible
@@ -27,7 +29,7 @@ echo "===========================================" >$LOGFILE
 /usr/bin/date >>$LOGFILE
 echo "Initial installation." >>$LOGFILE
 
-OS=`/usr/bin/lsb_release -si | /usr/bin/tr '[A-Z]' '[a-z]'`
+OS=`/usr/bin/lsb_release -si`
 RELEASE=`/usr/bin/lsb_release -sr`
 
 out ""
@@ -79,7 +81,21 @@ out "done."
 cd $ANSIBLEDIR
 
 outn "Updating host playbook ... "
-/usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
+if [[ "$OS" != "$LCCMSOS" || "$RELEASE" != "$LCCMSRELEASE" ]]
+then
+  # Must regenerate the playbook as the OS and/or release has changed.
+  /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml ${ANSIBLEDIR}/${HOST}.yml.old
+  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?unit=${UNIT}&host=${HOST}&os=${OS}&release=${RELEASE}"
+  if [[ $? == 0 ]]
+  then
+    /bin/rm -f ${ANSIBLEDIR}/${HOST}.yml.old
+  else
+      /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml.old ${ANSIBLEDIR}/${HOST}.yml
+  fi
+else
+  # Can just update the playbook from the server if needed.
+  /usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
+fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
 
