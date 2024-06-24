@@ -1,70 +1,80 @@
 ---
-  - name: Create /usr/local/share/restartnotify directory
-    file:
-      path: /usr/local/share/restartnotify
-      state: directory
-      mode: 0755
-      owner: root
-      group: root
+- name: Create /usr/local/share/restartnotify directory
+  file:
+    path: /usr/local/share/restartnotify
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
 
-  - name: Copy unibas logo in place
-    copy:
-      src: unibas_logo.png
-      dest: /usr/local/share/restartnotify/unibas_logo.png
-      owner: root
-      group: root
-      mode: '0644'
+- name: Copy unibas logo in place
+  copy:
+    src: unibas_logo.png
+    dest: /usr/local/share/restartnotify/unibas_logo.png
+    owner: root
+    group: root
+    mode: '0644'
 
-  - name: Copy restart notifier script in place
-    copy:
-      src: unibas_restart_notifier.sh
-      dest: /usr/local/share/restartnotify/unibas_restart_notifier.sh
-      owner: root
-      group: root
-      mode: '0755'
+- name: Copy restart notifier script in place
+  copy:
+    src: unibas_restart_notifier.sh
+    dest: /usr/local/share/restartnotify/unibas_restart_notifier.sh
+    owner: root
+    group: root
+    mode: '0755'
 
-  - name: Copy restart notifier unit file in place
-    copy:
-      src: unibas_restart_notifier.service
-      dest: /etc/systemd/system/unibas_restart_notifier.service
-      owner: root
-      group: root
-      mode: '0644'
+- name: Copy restart notifier unit file in place
+  copy:
+    src: unibas_restart_notifier.service
+    dest: /etc/systemd/system/unibas_restart_notifier.service
+    owner: root
+    group: root
+    mode: '0644'
 
-  - name: Copy restart notifier timer in place
-    copy:
-      src: unibas_restart_notifier.timer
-      dest: /etc/systemd/system/unibas_restart_notifier.timer
-      owner: root
-      group: root
-      mode: '0644'
-    notify: 
-      - enable unibas_restart_notifier timer
-      - start unibas_restart_notifier timer
+- name: Copy restart notifier timer in place
+  copy:
+    src: unibas_restart_notifier.timer
+    dest: /etc/systemd/system/unibas_restart_notifier.timer
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - start unibas_restart_notifier timer
 
-  - name: Copy restart notifier trigger script in place
-    copy:
-      src: unibas_restart_notifier_trigger.sh
-      dest: /usr/local/share/restartnotify/unibas_restart_notifier_trigger.sh
-      owner: root
-      group: root
-      mode: '0755'
+- name: Copy restart notifier trigger script in place
+  copy:
+    src: unibas_restart_notifier_trigger.sh
+    dest: /usr/local/share/restartnotify/unibas_restart_notifier_trigger.sh
+    owner: root
+    group: root
+    mode: '0755'
 
-  - name: Copy restart notifier trigger unit file in place
-    copy:
-      src: unibas_restart_notifier_trigger.service
-      dest: /etc/systemd/system/unibas_restart_notifier_trigger.service
-      owner: root
-      group: root
-      mode: '0644'
+- name: Copy restart notifier trigger unit file in place
+  copy:
+    src: unibas_restart_notifier_trigger.service
+    dest: /etc/systemd/system/unibas_restart_notifier_trigger.service
+    owner: root
+    group: root
+    mode: '0644'
 
-  - name: Copy restart notifier path trigger in place
-    copy:
-      src: unibas_restart_notifier_trigger.path
-      dest: /etc/systemd/system/unibas_restart_notifier_trigger.path
-      owner: root
-      group: root
-      mode: '0644'
-    notify:
-      - enable unibas_restart_notifier_trigger path
-      - start unibas_restart_notifier_trigger path
+- name: Copy restart notifier path trigger in place
+  copy:
+    src: unibas_restart_notifier_trigger.path
+    dest: /etc/systemd/system/unibas_restart_notifier_trigger.path
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - start unibas_restart_notifier_trigger path
+
+- name: enable unibas_restart_notifier_trigger path
+  systemd:
+    name: unibas_restart_notifier_trigger.path
+    daemon_reload: true
+    enabled: true
+
+- name: enable unibas_restart_notifier timer
+  systemd:
+    name: unibas_restart_notifier.timer
+    daemon_reload: true
+    enabled: true

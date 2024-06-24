@@ -22,7 +22,7 @@
     regexp: '^#?{{ item.alias }}\s*:'
     line: "{{ item.alias }}:\t{{ item.target }}"
   with_items: '{{ its_mta.mail_aliases }}'
-  notify: 'update aliases'
+  register: aliases
 
 - name: "Set relayhost in postfix config smtp.unibas.ch for non mobile system."
   lineinfile:
@@ -60,3 +60,7 @@
     line: "{{ its_mta.hostname }}"
   notify: 'restart postfix'
   when: setup_mailname.stat.exists
+
+- name: update aliases
+  command: newaliases
+  when: aliases is changed
