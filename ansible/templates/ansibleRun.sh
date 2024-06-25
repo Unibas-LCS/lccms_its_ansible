@@ -90,7 +90,7 @@ then
   then
     /bin/rm -f ${ANSIBLEDIR}/${HOST}.yml.old
   else
-      /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml.old ${ANSIBLEDIR}/${HOST}.yml
+    /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml.old ${ANSIBLEDIR}/${HOST}.yml
   fi
 else
   # Can just update the playbook from the server if needed.
