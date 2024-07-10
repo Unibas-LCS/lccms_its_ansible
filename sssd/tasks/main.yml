@@ -10,6 +10,7 @@
 - set_fact:
     package_list:
       - "sssd"
+      - "sssd-tools"
 
 - name: "Purge nscd."
   package:
