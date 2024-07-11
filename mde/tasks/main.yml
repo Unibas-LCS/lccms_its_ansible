@@ -41,16 +41,9 @@
     dest: /etc/apt/keyrings/microsoft.asc
   register: microsoft_apt
 
-- name: "Remove old Microsoft apt repository for MDATP."
-  apt_repository:
-    repo: deb [arch=arm64,armhf,amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
-    update_cache: yes
-    state: absent
-    filename: microsoft-prod
-
 - name: "Add Microsoft apt repository for MDATP."
   apt_repository:
-    repo: deb [arch=arm64,armhf,amd64 signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+    repo: deb [arch=arm64,armhf,amd64 signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/22.04/prod jammy main
     update_cache: yes
     state: present
     filename: microsoft-prod
