@@ -17,6 +17,12 @@
     dest: /etc/apt/preferences.d/mozilla
     mode: '0644'
 
+- name: "Copy Firefox snap blocking file in place"
+  copy:
+    src: firefox
+    dest: /etc/apt/preferences.d/block-firefox-snap
+    mode: '0644'
+
 - name: "Uninstall snap Firefox"
   snap:
     name: firefox
