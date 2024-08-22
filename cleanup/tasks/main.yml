@@ -3,3 +3,12 @@
   debug:
     msg: "nothing to do!"
   when: its_cleanup.execute
+
+- name: Register a variable
+  ansible.builtin.shell: dpkg -l | grep firefox
+  register: dpkg_output
+  changed_when: false
+
+- name: Use the variable in conditional statement
+  ansible.builtin.shell: apt install -y firefox --allow-downgrades
+  when: dpkg_output.stdout.find('Transitional') != -1
