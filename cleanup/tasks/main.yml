@@ -3,3 +3,13 @@
   debug:
     msg: "nothing to do!"
   when: its_cleanup.execute
+
+- name: "Remove update script"
+  file:
+    path: "/opt/update_to_24.04.sh"
+    state: absent
+
+- name: "Remove update sudoers file"
+  file:
+    path: "/etc/sudoers.d/update"
+    state: absent
