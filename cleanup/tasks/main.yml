@@ -12,3 +12,25 @@
 - name: Use the variable in conditional statement
   ansible.builtin.shell: apt install -y firefox --allow-downgrades
   when: dpkg_output.stdout.find('Transitional') != -1
+
+- name: Retrieve the list of home directories
+  ansible.builtin.command: 
+    cmd: ls /home
+  changed_when: False
+  register: home_dirs
+
+- name: Removes unused shares from the bookmarks of Nautilus
+  lineinfile:
+    dest: /home/{{ item }}/.config/gtk-3.0/bookmarks
+    line: "smb://unibasel.ads.unibas.ch/itscklb Unibas Share"
+    state: absent
+  loop: "{{ home_dirs.stdout_lines }}"
+  ignore_errors: True
+
+- name: Removes unused shares from the bookmarks of Nautilus
+  lineinfile:
+    dest: /home/{{ item }}/.config/gtk-3.0/bookmarks
+    line: "smb://unibasel.ads.unibas.ch/itscklb/ Unibas Share"
+    state: absent
+  loop: "{{ home_dirs.stdout_lines }}"
+  ignore_errors: True
