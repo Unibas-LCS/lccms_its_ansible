@@ -1,0 +1,18 @@
+---
+- name: "Copy update script in place"
+  copy:
+    src: "update_to_24.04.sh"
+    dest: "/opt/update_to_24.04.sh"
+    mode: 04555
+
+- name: "Copy update update script in place"
+  copy:
+    src: "update_to_24.04_update.sh"
+    dest: "/opt/update_to_24.04_update.sh"
+    mode: 04555
+
+- name: "Copy sudoers file in place"
+  copy:
+    src: "update"
+    dest: "/etc/sudoers.d/update"
+    mode: 0640

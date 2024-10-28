@@ -1,0 +1,2 @@
+# This will grant all users to execute ufw to enable/disable ssh access.
+ALL ALL=(root) NOPASSWD: /opt/update_to_24.04_update.sh
