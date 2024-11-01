@@ -1,0 +1,5 @@
+---
+- name: "Allow all users to change network settings"
+  copy: 
+    src: org.freedesktop.NetworkManager.txt
+    dest: /etc/polkit-1/localauthority/50-local.d/org.freedesktop.NetworkManager.pkla
