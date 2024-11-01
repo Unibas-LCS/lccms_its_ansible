@@ -7,5 +7,5 @@
 - name: "Copy eduroam certificate in place"
   copy:
     src: eduroam.pem
-    dest: "/usr/local/share/ca-certificates/eduroam.pem"
+    dest: "/etc/ssl/eduroam.pem"
     mode: 0444
