@@ -1,0 +1,6 @@
+[Enable NetworkManager]
+Identity=unix-group:uni-all
+Action=org.freedesktop.NetworkManager.*
+ResultAny=no
+ResultInactive=no
+ResultActive=yes
