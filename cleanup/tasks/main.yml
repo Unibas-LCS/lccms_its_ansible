@@ -9,6 +9,11 @@
     path: "/opt/update_to_24.04.sh"
     state: absent
 
+- name: "Remove update update script"
+  file:
+    path: "/opt/update_to_24.04_update.sh"
+    state: absent
+
 - name: "Remove update sudoers file"
   file:
     path: "/etc/sudoers.d/update"
