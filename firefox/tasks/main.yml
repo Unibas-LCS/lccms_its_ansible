@@ -47,8 +47,6 @@
     path: "/usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override"
     regexp: 'firefox_firefox.desktop'
     replace: 'firefox.desktop'
-  when: firefox_apt is changed
 
 - name: "Compile schemas"
   command: "/usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas/"
-  when: firefox_apt is changed

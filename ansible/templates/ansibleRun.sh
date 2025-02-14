@@ -118,8 +118,15 @@ cd ..
 
 out ""
 out "Running ansible."
+
+# Set the log file, then run ansible normally in order to get the colours.
+/usr/bin/rm -f ~/ansible.log
+export ANSIBLE_LOG_PATH=~/ansible.log
 # Now run the playbook. Save the output to a file and also show on screen.
-/usr/bin/ansible-playbook ${HOST}.yml | /usr/bin/tee -a $LOGFILE
+/usr/bin/ansible-playbook ${HOST}.yml
+# Cat the log file to the existing log file.
+/usr/bin/sed 's/[^|]*| //' ~/ansible.log >>$LOGFILE
+/usr/bin/rm ~/ansible.log
 
 # We will write an HTML file on what was done into $ACTIONDIR/actions.html
 # Check that the path exists:
