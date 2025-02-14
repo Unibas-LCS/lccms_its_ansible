@@ -1,23 +1,27 @@
 ---
 - setup:
   register: setup_res
+  tags: self-managed
 
 - name: "Check system state. (Ignore error)"
   command: 'systemctl is-system-running'
   changed_when: false
   failed_when: false
   register: 'systemd_state'
+  tags: self-managed
 
 - name: "Report bad system state. (Ignore error)"
   fail:
     msg: "systemctl reports state {{ systemd_state.stdout }}. Please check"
   when: 'systemd_state.rc != 0'
   ignore_errors: yes
+  tags: self-managed
 
 - name: "Collect ansible, package, and shell data."
   ansible.builtin.command: "/usr/bin/dpkg -l --no-pager"
   changed_when: false
   register: package_list
+  tags: self-managed
 
 - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
   uri:
@@ -33,3 +37,4 @@
   changed_when: false
   failed_when: false
   ignore_errors: yes
+  tags: self-managed

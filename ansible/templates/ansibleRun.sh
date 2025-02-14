@@ -13,6 +13,8 @@ HOST={{ lccms.host }}
 UNIT={{ lccms.unit }}
 LCCMSOS={{ lccms.os | default('') }}
 LCCMSRELEASE={{ lccms.release | default('') }}
+LCCMSCONFIGURATION={{ lccms.configuration }}   # managed, self-managed
+MACHINESTATE={{ lccms.status }}  # active, retired, ...
 
 LOGFILE=/var/log/lccmsrun.log
 ACTIONDIR=/usr/local/man/ansible
@@ -27,7 +29,6 @@ outn () {
 
 echo "===========================================" >$LOGFILE
 /usr/bin/date >>$LOGFILE
-echo "Initial installation." >>$LOGFILE
 
 OS=`/usr/bin/lsb_release -si`
 RELEASE=`/usr/bin/lsb_release -sr`
@@ -118,8 +119,19 @@ cd ..
 
 out ""
 out "Running ansible."
+TAG=""
+if [[ "$LCCMSCONFIGURATION" = "self-managed" ]] # Only execute commands with the tag 'self-managed'!
+then
+  echo "THIS MACHINE IS SELF MANAGED!"  >>$LOGFILE
+  TAG='--tags "self-managed"'
+fi
 # Now run the playbook. Save the output to a file and also show on screen.
-/usr/bin/ansible-playbook ${HOST}.yml | /usr/bin/tee -a $LOGFILE
+/usr/bin/ansible-playbook ${HOST}.yml $TAG | /usr/bin/tee -a $LOGFILE
+
+if [[ "$MACHINESTATE" == "retired" ]]
+then
+  echo "THIS MACHINE HAS BEEN RETIRED!"  >>$LOGFILE
+fi
 
 # We will write an HTML file on what was done into $ACTIONDIR/actions.html
 # Check that the path exists:

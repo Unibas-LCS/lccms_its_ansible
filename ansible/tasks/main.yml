@@ -9,35 +9,52 @@
   apt:
     name: ansible
     state: present
+  tags: self-managed
 
 - name: "Install the ansible icon."
   ansible.builtin.copy:
     src: mdi--ansible.svg
     dest: /usr/share/icons/
+  when: its_ansible.managed
+  tags: self-managed
 
 - name: "Install the desktop launcher."
   ansible.builtin.copy:
     src: managed.desktop
     dest: /usr/share/applications/ansible-managed.desktop
+  when: its_ansible.managed
+  tags: self-managed
+
+- name: "Remove the icon and desktop launcher."
+  ansible.builtin.file:
+    dest: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/share/icons/mdi--ansible.svg
+    - /usr/share/applications/ansible-managed.desktop
+  when: not its_ansible.managed
 
 - name: "Install the ansible execution script."
   ansible.builtin.template:
     src: ansibleRun.sh
     dest: /usr/.ansible/
     mode: 0744
-  when: its_ansible.managed
-  
+#  when: its_ansible.managed
+  tags: self-managed
+
 - name: "Install the ansible service."
   ansible.builtin.copy:
     src: ansible.service
     dest: /etc/systemd/system/
   when: its_ansible.managed
+  tags: self-managed
 
 - name: "Define the repetition."
   ansible.builtin.copy:
     src: ansible.timer
     dest: /etc/systemd/system/
   when: its_ansible.managed
+  tags: self-managed
 
 - name: "Disable the timer if not managed."
   ansible.builtin.systemd:
@@ -59,6 +76,7 @@
   failed_when:
     - stop_service.failed == true
     - '"Could not find the requested service ansible: host" not in stop_service.msg'
+  tags: self-managed
 
 ## This, unfortunately, also executes the timer immediately. Not what we want!
 #- name: "Set up for hourly execution."
@@ -71,3 +89,4 @@
   ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
   changed_when: false
   when: its_ansible.managed
+  tags: self-managed
