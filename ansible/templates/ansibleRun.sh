@@ -119,19 +119,28 @@ cd ..
 
 out ""
 out "Running ansible."
+
 TAG=""
 if [[ "$LCCMSCONFIGURATION" = "self-managed" ]] # Only execute commands with the tag 'self-managed'!
 then
   echo "THIS MACHINE IS SELF MANAGED!"  >>$LOGFILE
   TAG='--tags "self-managed"'
 fi
-# Now run the playbook. Save the output to a file and also show on screen.
-/usr/bin/ansible-playbook ${HOST}.yml $TAG | /usr/bin/tee -a $LOGFILE
 
 if [[ "$MACHINESTATE" == "retired" ]]
 then
   echo "THIS MACHINE HAS BEEN RETIRED!"  >>$LOGFILE
 fi
+
+# Set the log file, then run ansible normally in order to get the colours.
+/usr/bin/rm -f ~/ansible.log
+export ANSIBLE_LOG_PATH=~/ansible.log
+# Now run the playbook. Save the output to a file and also show on screen.
+/usr/bin/ansible-playbook ${HOST}.yml
+# Cat the log file to the existing log file.
+/usr/bin/sed 's/[^|]*| //' ~/ansible.log >>$LOGFILE
+/usr/bin/rm ~/ansible.log
+>>>>>>> 542f8a02bf5b0fca8b73c5c47a4b10d0bb26f5b6
 
 # We will write an HTML file on what was done into $ACTIONDIR/actions.html
 # Check that the path exists:
