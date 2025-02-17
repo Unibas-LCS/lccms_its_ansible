@@ -6,7 +6,7 @@
 #   * gidnumber: the id of the group
 #   * source: an optional string allowing to manage subsets of groups by different apps.
 
-- name: "groups: Ensure all groups are present."
+- name: "Ensure all groups are present."
   group:
     name: "{{ item.name|lower }}"
     gid: "{{ item.gidnumber }}"

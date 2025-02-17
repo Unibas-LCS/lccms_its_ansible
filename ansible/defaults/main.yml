@@ -1,3 +1,3 @@
 ---
 its_ansible:
-  managed: "{{ (lccms.configuration  == 'managed') | bool }}"
+  managed: "{{ (lccms.configuration  in ['managed', 'self-managed']) and (lccms.status != 'retired') | bool }}"
