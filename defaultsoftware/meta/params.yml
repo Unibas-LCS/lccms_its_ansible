@@ -1,0 +1,8 @@
+---
+parameters:
+  its_defaultsoftware:
+    apt:
+      label: Packages
+      type: list
+      rows: 10
+      description: Apt packages to install per default.

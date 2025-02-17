@@ -1,9 +1,4 @@
 ---
-- name: "Install polkitd-pkla package because otherwise it does not work anymore"
-  apt:
-    name: polkitd-pkla
-    state: present
-
 - name: "Allow all users to change network settings"
   copy: 
     src: org.freedesktop.NetworkManager.txt
