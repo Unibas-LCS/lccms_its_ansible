@@ -23,7 +23,7 @@
   register: package_list
   tags: self-managed
 
-- name: "Check if admin rights are granted to any user in /home"
+- name: "Check if admin rights are granted to any user in /home."
   command: "/bin/bash /usr/.ansible/roles/its/report/files/adrig.sh"
   register: admin_rights_granted
   changed_when: false

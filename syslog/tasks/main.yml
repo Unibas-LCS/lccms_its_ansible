@@ -13,7 +13,7 @@
     state: "absent"
   notify: 'restart rsyslog'
 
-- name: "Keep 7 days of syslog on system"
+- name: "Keep 7 days of syslog on system."
   lineinfile:
     dest: "/etc/logrotate.d/rsyslog"
     regexp: '^\s*rotate'
