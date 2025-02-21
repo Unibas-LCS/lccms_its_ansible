@@ -1,6 +1,51 @@
 {
    "antivirusEngine":{
+      "enforcementLevel":"real_time",
+      "behaviorMonitoring": "enabled",
+      "scanAfterDefinitionUpdate":true,
+      "scanArchives":true,
+      "scanHistoryMaximumItems": 10000,
+      "scanResultsRetentionDays": 90,
+      "maximumOnDemandScanThreads":2,
       "exclusionsMergePolicy":"merge",
+      "allowedThreats":[],
+      "disallowedThreatActions":[
+         "allow",
+         "restore"
+      ],
+      "nonExecMountPolicy":"unmute",
+      "unmonitoredFilesystems": [],
+      "enableFileHashComputation": false,
+      "threatTypeSettingsMergePolicy":"merge",
+      "threatTypeSettings":[
+         {
+            "key":"potentially_unwanted_application",
+            "value":"block"
+         },
+         {
+            "key":"archive_bomb",
+            "value":"audit"
+         }
+      ],
+      "cloudService":{
+         "enabled":true,
+         "diagnosticLevel":"optional",
+         "automaticSampleSubmissionConsent":"safe",
+         "automaticDefinitionUpdateEnabled":true
+      },
+      "networkProtection":{
+         "enforcementLevel":"audit"
+      },
+      "edr":{
+         "tags":[
+            {
+               "key":"GROUP",
+               "value":"{{ its_mde.defender_group_tag }}"
+            }
+         ]
+      }
+   },
+   "exclusionSettings":{
       "exclusions":[
 {% for dir in its_mde.exclude.directories %}
         {
@@ -21,14 +66,6 @@
            "isDirectory":false,
            "path":"/var/log"
         }
-      ]
-   },
-   "edr":{
-      "tags":[
-         {
-            "key":"GROUP",
-            "value":"{{ its_mde.defender_group_tag }}"
-         }
       ]
    }
 }
