@@ -27,6 +27,7 @@
   command: "/bin/bash /usr/.ansible/roles/its/report/files/adrig.sh"
   register: admin_rights_granted
   changed_when: false
+  tags: self-managed
 
 - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
   uri:
