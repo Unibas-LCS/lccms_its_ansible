@@ -1,0 +1,11 @@
+---
+its_sudoers:
+
+# The array of login names of users who should be added to the group in addition to the owner.
+  users: []
+
+# The boolean determining whether the owner should be entered into the sudoers list or not.
+  addOwner: "{{ ((lccms.configuration == 'managed' and lccms.adminRights) or lccms.configuration in ['self-managed', 'unmanaged']) and lccms.ownerUID != '' }}"
+
+# The owner of the device.
+  owner: "{{ lccms.ownerUID }}"

@@ -1,0 +1,3 @@
+---
+desctiption: Add users to the sudoers group if admin rights granted or self managed device.
+user_info:
