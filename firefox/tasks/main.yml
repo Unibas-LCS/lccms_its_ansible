@@ -1,23 +1,23 @@
 ---
-- name: "Download Firefox APT Keyring"
+- name: "Download Firefox APT Keyring."
   get_url:
     url: https://packages.mozilla.org/apt/repo-signing-key.gpg
     dest: /etc/apt/keyrings/packages.mozilla.org.asc
     mode: '644'
 
-- name: "Add Firefox Repository"
+- name: "Add Firefox Repository."
   apt_repository:
     repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
     state: present
     filename: mozilla
 
-- name: "Copy Mozilla APT prioritization file in place"
+- name: "Copy Mozilla APT prioritization file in place."
   copy:
     src: mozilla
     dest: /etc/apt/preferences.d/mozilla
     mode: '0644'
 
-- name: "Uninstall snap Firefox"
+- name: "Uninstall snap Firefox."
   snap:
     name: firefox
     state: absent
@@ -29,20 +29,20 @@
     state: absent
   when: firefox is changed
 
-- name: "Install Firefox package"
+- name: "Install Firefox package."
   apt:
     name: "firefox"
     state: "present"
     update_cache: yes
   register: firefox_apt
 
-- name: "Adapt favorites"
+- name: "Adapt favorites."
   replace:
     path: "/usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override"
     regexp: 'firefox_firefox.desktop'
     replace: 'firefox.desktop'
   when: firefox_apt is changed
 
-- name: "Compile schemas"
+- name: "Compile schemas."
   command: "/usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas/"
   when: firefox_apt is changed

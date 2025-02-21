@@ -1,5 +1,5 @@
 ---
-- name: "Install openssh-server"
+- name: "Install openssh-server."
   apt:
     name: openssh-server
     state: present

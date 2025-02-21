@@ -23,6 +23,12 @@
   register: package_list
   tags: self-managed
 
+- name: "Check if admin rights are granted to any user in /home."
+  command: "/bin/bash /usr/.ansible/roles/its/report/files/adrig.sh"
+  register: admin_rights_granted
+  changed_when: false
+  tags: self-managed
+
 - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
   uri:
     url: "{{ its_report.server }}"
@@ -33,6 +39,7 @@
       shells: "{{ lookup('file', '/etc/shells/') }}"
       packages: "{{ package_list.stdout }}"
       unit: "{{ its_report.unit }}"
+      adminRights: "{{ admin_rights_granted }}"
     status_code: 200
   changed_when: false
   failed_when: false

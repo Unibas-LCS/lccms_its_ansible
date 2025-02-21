@@ -1,10 +1,10 @@
 ---
-- name: Installing SSSD and Kerberos dependencies
+- name: "Installing SSSD and Kerberos dependencies."
   apt:
       name: sssd, libpam-sss, libnss-sss, adcli, krb5-user, sssd-dbus
       state: present
 
-- name: Joining AD
+- name: "Joining AD."
   command: /bin/bash -c "echo -n oO1DMWGQdDDXTW9Vb6lQQVIIL | /usr/sbin/adcli join -U d-cs-adbindl --stdin-password UNIBASEL.ADS.UNIBAS.CH"
   args:
       creates: /etc/krb5.keytab
