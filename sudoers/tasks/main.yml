@@ -1,0 +1,18 @@
+---
+# Check the management level and the admin rights of this machine.
+# If ('managed' and 'Admin Rights Granted') or 'self managed', add the owner, if it exists,
+# to the sudoers group.
+
+- name: "Add the owner {{ its_sudoers.owner }} to the sudoers group."
+  ansible.builtin.user:
+    name: "{{ its_sudoers.owner }}"
+    groups: sudo
+    append: yes
+  when: its_sudoers.addOwner
+
+- name: "Remove the owner {{ its_sudoers.owner }} from the sudoers group."
+  command: "gpasswd -d {{ its_sudoers.owner }} sudo"
+  register: command_result
+  changed_when: "not 'is not a member of' in command_result.stderr"
+  failed_when: false
+  when: not its_sudoers.addOwner and its_sudoers.owner != ""
