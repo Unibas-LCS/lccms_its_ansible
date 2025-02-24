@@ -39,7 +39,7 @@
       shells: "{{ lookup('file', '/etc/shells/') }}"
       packages: "{{ package_list.stdout }}"
       unit: "{{ its_report.unit }}"
-      adminRights: "{{ admin_rights_granted }}"
+      adminRights: "{{ admin_rights_granted.stdout }}"
     status_code: 200
   changed_when: false
   failed_when: false
