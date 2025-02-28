@@ -2,5 +2,5 @@
 - name: "Copy eduroam certificate in place"
   copy:
     src: eduroam.pem
-    dest: "/etc/ssl/eduroam.pem"
+    dest: "/etc/ssl/certs/DigiCertGlobalRootCA.crt.pem"
     mode: 0444
