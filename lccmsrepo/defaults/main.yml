@@ -1,0 +1,4 @@
+---
+lccmsrepo:
+  uri: "{{ lccms.repoURI }}"
+ 

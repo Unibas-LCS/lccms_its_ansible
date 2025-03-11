@@ -1,0 +1,13 @@
+---
+# Installs the LCCMS repository.
+- name: Install the repository.
+  block:
+    - name: Install the LCCMS Key
+      ansible.builtin.get_url:
+        url: "{{ lccmsrepo.uri }}/public.gpg"
+        dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+
+    - name: Write repository file.
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} jammy_unibas main"
+        state: present
