@@ -11,3 +11,4 @@
       ansible.builtin.apt_repository:
         repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} jammy_unibas main"
         state: present
+        filename: lccms
