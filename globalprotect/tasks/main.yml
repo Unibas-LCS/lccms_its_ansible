@@ -1,7 +1,7 @@
 ---
 # Install the global protect VPN packages.
 
-- name: "Install resolvconf for GP version 6.1.3."
+- name: "Install resolvconf for GP."
   ansible.builtin.apt:
     name: systemd-resolved
     state: present
@@ -20,6 +20,6 @@
 
 - name: "Install the Global Protect UI packages."
   ansible.builtin.apt:
-    deb: "{{ lccms.ansibleDir }}/roles/its/globalprotect/files/GlobalProtect_UI_focal_deb-6.2.1.1-7.deb"
+    deb: "{{ lccms.ansibleDir }}/roles/its/globalprotect/files/GlobalProtect_UI_focal_deb-6.1.3.0-703.deb"
     state: present
   when: its_globalprotect.kind == 'mobile' and not lccmsrepo.stat.exists
