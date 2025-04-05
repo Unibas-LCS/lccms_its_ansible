@@ -3,4 +3,4 @@ its_report:
 # The full URI of the server to which to send reports.
   server: "{{ lccms.requestURI }}put/inventory"
 # The unit to which to send.
-  unit: "{{ lccms.unit }}"
+  unit: "{{ cmdb.Unibas_MDMLCCMSConfigPath }}"

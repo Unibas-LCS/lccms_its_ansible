@@ -14,7 +14,7 @@
     default: deny
   when: its_firewall.state == "block"
 
-- name: "Enable UFW and allow all traffic."
+- name: "Enable UFW and allow all traffic if state is 'allow'."
   community.general.ufw:
     state: enabled
     direction: "incoming"

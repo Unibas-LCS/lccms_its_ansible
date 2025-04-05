@@ -2,8 +2,8 @@
 its_sssd:
 # Define the method of authentication and authorisation. Values are: local, passwd, <group>, any
 # where <group> is any AD group available.
-  users_allow: 'any'
+  users_allow: "{{ cmdb.Unibas_MDMLCCMSAuthMethod }}"
   denied_ad_groups:
-  allowed_ad_groups:
+  allowed_ad_groups: "{{ cmdb.Unibas_MDMLCCMSAuthGroup }}"
   allowed_ad_users:
   ldap_user_gid_number: gidNumber

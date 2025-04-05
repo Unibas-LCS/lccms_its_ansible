@@ -12,3 +12,16 @@ its_users:
 
 # This complete list of users when using local entries.
   users: []
+
+# How to authenticate. For local and passwd, we will create a local passwd entry.
+  authentication: "{{ cmdb.Unibas_MDMLCCMSAuthMethod }}"
+
+# The owner attributes, if existing
+  local_uid: "{{ cmdb.Owner }}"
+  local_uidnumber: "{{ cmdb.uidnumber|default('') }}"
+  local_gid: "{{ cmdb.Group|default('') }}"
+  local_gidnumber: "{{ cmdb.gidnumber|default('') }}"
+  local_gecos: "{{ cmdb.gecos|default('USER') }},ansible"
+  local_home: "/home/{{ cmdb.Owner }}"
+  local_shell: "{{ cmdb.shell|default('/bin/bash') }}"
+  local_mode: "{{ cmdb.mode|default('0700') }}"

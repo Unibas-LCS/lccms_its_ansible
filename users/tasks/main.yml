@@ -32,6 +32,22 @@
 #   mode: "0700"
 # </code>
 
+# If a local user exists (the CI was assigned to a user), add this to the list
+- set_fact:
+    localuser:
+      uid: "{{ its_users.local_uid }}"
+      gid: "{{ its_users.local_gid }}"
+      uidnnumber: "{{ its_users.local_uidnumber }}"
+      gidnumber: "{{ its_users.local_gidnumber }}"
+      gecos: "{{ its_users.local_gecos }}"
+      home: "{{ its_users.local_home }}"
+      shell: "{{ its_users.local_shell }}"
+      mode: "{{ its_users.local_mode }}"
+  when: 'its_users.local_uid != ""'
+
+- set_fact:
+    its_users.users: "{{ its_users.users + [ localuser ]}}"
+  when: 'its_users.local_uid != ""'
 
 - name: "Make sure the local user commands exist."
   package:

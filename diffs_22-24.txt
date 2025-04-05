@@ -1,0 +1,414 @@
+careful with:
+lccmsrepo: this contains the OS name and cannot just be copied.
+mde: also contains the OS name.
+mta: may have a different host name!
+networking: DO NOT update!
+reconnect: could place this into the cleanup!
+!!!!!!!!!!!!!!!!!!!! sssd conf: using Unibas_MDMLCCMSAuthGroup, but this is currently still the reference number!
+!!!!!!!!!!!!!!!!!!!! users defines more cmdb variables which must be set if an owner is given! (need to do an LDAP lookup)
+
+diff -r 24.04/its/ansible/defaults/main.yml 22.04/its/ansible/defaults/main.yml
+3c3
+<   managed: "{{ (lccms.configuration  in ['managed', 'self-managed']) and (lccms.status != 'retired') | bool }}"
+---
+>   managed: "{{ (lccms.configuration  == 'managed') | bool }}"
+
+
+diff -r 24.04/its/ansible/tasks/main.yml 22.04/its/ansible/tasks/main.yml
+42d41
+< #  when: its_ansible.managed
+
+
+diff -r 24.04/its/cleanup/tasks/main.yml 22.04/its/cleanup/tasks/main.yml
+7,10c7,20
+< - name: "Remove update script."
+<   file:
+<     path: "/opt/update_to_24.04.sh"
+<     state: absent
+---
+> - name: Register a variable
+>   ansible.builtin.shell: dpkg -l | grep firefox
+>   register: dpkg_output
+>   changed_when: false
+> 
+> - name: Use the variable in conditional statement
+>   ansible.builtin.shell: apt install -y firefox --allow-downgrades
+>   when: dpkg_output.stdout.find('Transitional') != -1
+> 
+> - name: Retrieve the list of home directories
+>   ansible.builtin.command: 
+>     cmd: ls /home
+>   changed_when: False
+>   register: home_dirs
+12,14c22,25
+< - name: "Remove update update script."
+<   file:
+<     path: "/opt/update_to_24.04_update.sh"
+---
+> - name: Removes unused shares from the bookmarks of Nautilus
+>   lineinfile:
+>     dest: /home/{{ item }}/.config/gtk-3.0/bookmarks
+>     line: "smb://unibasel.ads.unibas.ch/itscklb Unibas Share"
+15a27,28
+>   loop: "{{ home_dirs.stdout_lines }}"
+>   ignore_errors: True
+17,19c30,33
+< - name: "Remove update sudoers file."
+<   file:
+<     path: "/etc/sudoers.d/update"
+---
+> - name: Removes unused shares from the bookmarks of Nautilus
+>   lineinfile:
+>     dest: /home/{{ item }}/.config/gtk-3.0/bookmarks
+>     line: "smb://unibasel.ads.unibas.ch/itscklb/ Unibas Share"
+20a35,36
+>   loop: "{{ home_dirs.stdout_lines }}"
+>   ignore_errors: True
+\ No newline at end of file
+
+
+diff -r 24.04/its/defaultsoftware/defaults/main.yml 22.04/its/defaultsoftware/defaults/main.yml
+6a7,8
+>   snap:
+>     - teams-for-linux
+
+
+Only in 22.04/its/defaultsoftware: meta
+
+
+diff -r 24.04/its/defaultsoftware/tasks/main.yml 22.04/its/defaultsoftware/tasks/main.yml
+2c2
+< - name: "Install default packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+---
+> - name: "Install default apt packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+6a7,11
+> 
+> - name: "Install default snap packages. </br>\n {{ its_defaultsoftware.snap | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+>   snap:
+>     name: "{{ its_defaultsoftware.snap }}"
+>     state: "present"
+
+
+diff -r 24.04/its/etckeeper/meta/params.yml 22.04/its/etckeeper/meta/params.yml
+3,4d2
+<   public: ~
+<   private: ~
+
+
+diff -r 24.04/its/firefox/tasks/main.yml 22.04/its/firefox/tasks/main.yml
+19a20,25
+> - name: "Copy Firefox snap blocking file in place."
+>   copy:
+>     src: firefox
+>     dest: /etc/apt/preferences.d/block-firefox-snap
+>     mode: '0644'
+> 
+
+
+diff -r 24.04/its/firewall/meta/params.yml 22.04/its/firewall/meta/params.yml
+3,28c3,18
+<   public:
+<     its_firewall:
+<       state:
+<         kind: option
+<         default: 'block'
+<         comment: The forced state of the firewall. This still allows adding or removing rules as needed.
+<         options:
+<         - value: 'block'
+<           comment: Block all incoming traffic not listed, allow all outgoing.
+<         - value: 'allow'
+<           comment: Allow all traffic.
+<       apps:
+<         kind: array
+<         default: []
+<         comment: The array of application names for which to allow incoming traffic.
+<   private:
+<     its_firewall:
+<       system:
+<         kind: option
+<         options:
+<         - value: 'mobile'
+<           comment: The system is not always connected via ethernet.
+<         - value: 'workstation'
+<           comment: The system is stationary and always connected via ethernet.
+<         default: "{{ lccms.computerType }}"
+<         comment: The kind of system. This is either mobile or workstation.
+---
+>   its_firewall:
+>     state:
+>       type: choice
+>       default: 'block'
+>       comment: The forced state of the firewall. This still allows adding or removing rules as needed.
+>       options:
+>       - label: Block
+>         value: 'block'
+>         comment: Block all incoming traffic not listed, allow all outgoing.
+>       - label: Allow
+>         value: 'allow'
+>         comment: Allow all traffic.
+>     apps:
+>       type: list
+>       default: []
+>       comment: The array of application names for which to allow incoming traffic.
+
+
+Only in 24.04/its/globalprotect/files: GlobalProtect_UI_focal_deb-6.2.1.1-276.deb
+Only in 24.04/its/globalprotect/files: GlobalProtect_UI_focal_deb-6.2.1.1-7.deb
+Only in 24.04/its/globalprotect/files: restoregp.sh
+
+
+diff -r 24.04/its/globalprotect/tasks/main.yml 22.04/its/globalprotect/tasks/main.yml
+4c4
+< - name: "Install resolvconf for GP."
+---
+> - name: "Install resolvconf for GP version 6.1.3."
+6c6
+<     name: systemd-resolved
+---
+>     name: resolvconf
+10,20d9
+< - name: "Check if the lccms repo is installed"
+<   stat:
+<     path: "/etc/apt/sources.list.d/lccms.list"
+<   register: lccmsrepo
+< 
+< - name: "Install the Global Protect APT Package."
+<   ansible.builtin.apt:
+<     name: "globalprotect"
+<     state: present
+<   when: its_globalprotect.kind == 'mobile' and lccmsrepo.stat.exists
+< 
+25c14
+<   when: its_globalprotect.kind == 'mobile' and not lccmsrepo.stat.exists
+---
+>   when: its_globalprotect.kind == 'mobile'
+
+
+diff -r 24.04/its/groups/meta/params.yml 22.04/its/groups/meta/params.yml
+3,4c3,14
+<   public: ~
+<   private: ~
+---
+>   its_groups:
+>     groups:
+>       type: table
+>       cols:
+>         name:
+>           type: string
+>           cols: 32
+>           label: Name
+>         gidnumber:
+>           type: string
+>           cols: 8
+>           label: ID
+
+
+diff -r 24.04/its/groups/tasks/main.yml 22.04/its/groups/tasks/main.yml
+9c9
+< - name: "Ensure all groups are present."
+---
+> - name: "groups: Ensure all groups are present."
+
+
+diff -r 24.04/its/login/files/ubuntu-gdm-set-background 22.04/its/login/files/ubuntu-gdm-set-background
+19c19
+< elif [ "$codename" == "impish" ] || [ "$codename" == "jammy" ] || [ "$codename" == "noble" ] && [ "$osname" == '"Ubuntu"' ]; then
+---
+> elif [ "$codename" == "impish" ] || [ "$codename" == "jammy" ] || [ "$codename" == "kinetic" ] && [ "$osname" == '"Ubuntu"' ]; then
+
+
+diff -r 24.04/its/mde/defaults/main.yml 22.04/its/mde/defaults/main.yml
+2a3
+> #  alternative_file: "mdatp_custom.json.j2"
+
+
+diff -r 24.04/its/mde/tasks/main.yml 22.04/its/mde/tasks/main.yml
+43a44,50
+> - name: "Remove old Microsoft apt repository for MDATP."
+>   apt_repository:
+>     repo: deb [arch=arm64,armhf,amd64] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+>     update_cache: yes
+>     state: absent
+>     filename: microsoft-prod
+> 
+46c53
+<     repo: deb [arch=arm64,armhf,amd64 signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+---
+>     repo: deb [arch=arm64,armhf,amd64 signed-by=/etc/apt/keyrings/microsoft.asc] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main
+diff -r 24.04/its/networking/tasks/main.yml 22.04/its/networking/tasks/main.yml
+2,6d1
+< - name: "Install polkitd-pkla package because otherwise it does not work anymore"
+<   apt:
+<     name: polkitd-pkla
+<     state: present
+< 
+
+
+diff -r 24.04/its/report/tasks/main.yml 22.04/its/report/tasks/main.yml
+42c42
+<       Unibas_AdminRightsGranted: "{{ admin_rights_granted.stdout }}"
+---
+>       userAdminRights: "{{ admin_rights_granted.stdout }}"
+
+
+diff -r 24.04/its/restartnotify/tasks/main.yml 22.04/its/restartnotify/tasks/main.yml
+2c2
+< - name: Create /usr/local/share/restartnotify directory.
+---
+> - name: Create /usr/local/share/restartnotify directory
+10c10
+< - name: Copy unibas logo in place.
+---
+> - name: Copy unibas logo in place
+18c18
+< - name: Copy restart notifier script in place.
+---
+> - name: Copy restart notifier script in place
+26c26
+< - name: Copy restart notifier unit file in place.
+---
+> - name: Copy restart notifier unit file in place
+34c34
+< - name: Copy restart notifier timer in place.
+---
+> - name: Copy restart notifier timer in place
+44c44
+< - name: Copy restart notifier trigger script in place.
+---
+> - name: Copy restart notifier trigger script in place
+52c52
+< - name: Copy restart notifier trigger unit file in place.
+---
+> - name: Copy restart notifier trigger unit file in place
+60c60
+< - name: Copy restart notifier path trigger in place.
+---
+> - name: Copy restart notifier path trigger in place
+70c70
+< - name: Enable unibas_restart_notifier_trigger path.
+---
+> - name: enable unibas_restart_notifier_trigger path
+76c76
+< - name: Enable unibas_restart_notifier timer.
+---
+> - name: enable unibas_restart_notifier timer
+
+
+diff -r 24.04/its/ssh/meta/params.yml 22.04/its/ssh/meta/params.yml
+3,17c3,15
+<   public:
+<     its_ssh:
+<       sshd:
+<         kind: record
+<         comment: |
+<           Settings for the ssh daemon.</br>
+<           Each entry designates an option and its value as used in the sshd configuration file.</br>
+<           Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
+<       ssh:
+<         kind: record
+<         comment: |
+<           Settings for the ssh client.</br>
+<           Each entry designates an option and its value as used in the sshd configuration file.
+<           Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
+<   private: ~
+---
+>   its_ssh:
+>     sshd:
+>       kind: block
+>       comment: |
+>         Settings for the ssh daemon.</br>
+>         Each entry designates an option and its value as used in the sshd configuration file.</br>
+>         Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
+>     ssh:
+>       kind: block
+>       comment: |
+>         Settings for the ssh client.</br>
+>         Each entry designates an option and its value as used in the sshd configuration file.
+>         Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
+
+
+diff -r 24.04/its/sssd/defaults/main.yml 22.04/its/sssd/defaults/main.yml
+6,8c6,8
+<   denied_ad_groups:
+<   allowed_ad_groups:
+<   allowed_ad_users:
+---
+>   denied_ad_groups: ~
+>   allowed_ad_groups: ~
+>   allowed_ad_users: ~
+
+
+diff -r 24.04/its/sssd/tasks/main.yml 22.04/its/sssd/tasks/main.yml
+18a19
+>   become: yes
+24a26
+>   become: yes
+33a36
+>   become: yes
+48c51
+<   when: 'its_sssd.users_allow != "local"'
+---
+>   become: yes
+65a69
+>   become: yes
+80a85
+>   become: yes
+90a96
+>   become: yes
+102a109
+>   become: yes
+109a117
+>   become: yes
+121a130
+>   become: yes
+129a139
+>   become: yes
+
+
+diff -r 24.04/its/update2lts/files/update_to_24.04.sh 22.04/its/update2lts/files/update_to_24.04.sh
+5a6
+> reboot
+
+
+diff -r 24.04/its/update2lts/files/update_to_24.04_update.sh 22.04/its/update2lts/files/update_to_24.04_update.sh
+12c12
+< do-release-upgrade -q
+---
+> do-release-upgrade -q DistUpgradeViewNonInteractive
+
+
+diff -r 24.04/its/update2lts/tasks/main.yml 22.04/its/update2lts/tasks/main.yml
+1a2,6
+> - name: "Copy update script in place"
+>   copy:
+>     src: "update_to_24.04.sh"
+>     dest: "/opt/update_to_24.04.sh"
+>     mode: 04555
+2a8,18
+> - name: "Copy update update script in place"
+>   copy:
+>     src: "update_to_24.04_update.sh"
+>     dest: "/opt/update_to_24.04_update.sh"
+>     mode: 04555
+> 
+> - name: "Copy sudoers file in place"
+>   copy:
+>     src: "update"
+>     dest: "/etc/sudoers.d/update"
+>     mode: 0640
+
+
+diff -r 24.04/its/users/tasks/main.yml 22.04/its/users/tasks/main.yml
+48,49c48,49
+< # This will not be shown in the status report.
+< - command: "/bin/grep ',ansible:' /etc/passwd"
+---
+> - name: "Load all 'ansible' users from /etc/passwd (ignore error)"
+>   command: "/bin/grep ',ansible:' /etc/passwd"
+
+
+diff -r 24.04/its/zoom/tasks/main.yml 22.04/its/zoom/tasks/main.yml
+2c2
+< - name: Install Zoom.
+---
+> - name: Install Zoom

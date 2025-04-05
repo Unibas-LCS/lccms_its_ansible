@@ -5,7 +5,7 @@ its_sudoers:
   users: []
 
 # The boolean determining whether the owner should be entered into the sudoers list or not.
-  addOwner: "{{ ((lccms.configuration == 'managed' and lccms.adminRights) or lccms.configuration in ['self-managed', 'unmanaged']) and lccms.ownerUID != '' }}"
+  addOwner: "{{ (cmdb.Unibas_AdminRightsGranted or (cmdb.Unibas_Managed in ['selfmanaged', 'unmanaged'])) and cmdb.Owner != '' }}"
 
 # The owner of the device.
-  owner: "{{ lccms.ownerUID }}"
+  owner: "{{ cmdb.Owner }}"

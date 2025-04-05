@@ -56,7 +56,6 @@
     mode: 0600
     owner: root
     group: root
-  become: true
   when: 'its_sssd.users_allow != "local"'
 
 - name: "Make sure sssd packages are installed if not local users only."
@@ -94,7 +93,7 @@
     - shadow
     - group
 
-- name: "Remove sss from nsswitch unless passwd, group, or shadow."
+- name: "Remove sss from nsswitch except for passwd, group, or shadow."
   replace:
     path: '/etc/nsswitch.conf'
     regexp: '^\s*(?!passwd|group|shadow)([a-z]+)\s*:\s*(.*)\s?sss(.*)$'
