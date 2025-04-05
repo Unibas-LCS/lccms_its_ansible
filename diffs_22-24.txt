@@ -1,3 +1,5 @@
+CHECK all booleans: if a value is defined but has no value, it is == None !!! otherwise undefined
+
 careful with:
 lccmsrepo: this contains the OS name and cannot just be copied.
 mde: also contains the OS name.
