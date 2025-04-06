@@ -12,21 +12,3 @@ its_users:
 
 # This complete list of users when using local entries.
   users: []
-
-# THIS SHOULD NEVER BE OVERRIDDEN!
-its_users_local:
-# How to authenticate. For local and passwd, we will create a local passwd entry.
-  authentication: "{{ cmdb.Unibas_MDMLCCMSAuthMethod }}"
-
-# Flag to determine whether the local entry is to be made.
-  addLocal: "{{ (cmdb.Unibas_MDMLCCMSAuthMethod in ['local', 'password']) and not ((cmdb.Owner == '') or (cmdb.Owner == None) or (cmdb.Owner is undefined)) }}"
-
-# The owner attributes, if existing
-  uid: "{{ cmdb.Owner }}"
-  uidnumber: "{{ cmdb.uidnumber|default('') }}"
-  gid: "{{ cmdb.Group|default('') }}"
-  gidnumber: "{{ cmdb.gidnumber|default('') }}"
-  gecos: "{{ cmdb.gecos|default('USER') }}"
-  home: "/home/{{ cmdb.Owner }}"
-  shell: "{{ cmdb.shell|default('/bin/bash') }}"
-  mode: "{{ cmdb.mode|default('0700') }}"

@@ -32,27 +32,6 @@
 #   mode: "0700"
 # </code>
 
-# If a local user exists (the CI was assigned to a user), add this to the list of users
-- set_fact:
-    localuser:
-      uid: "{{ its_users_local.uid }}"
-      gid: "{{ its_users_local.gid }}"
-      uidnnumber: "{{ its_users_local.uidnumber }}"
-      gidnumber: "{{ its_users_local.gidnumber }}"
-      gecos: "{{ its_users_local.gecos }}"
-      home: "{{ its_users_local.home }}"
-      shell: "{{ its_users_local.shell }}"
-      mode: "{{ its_users_local.mode }}"
-  when: its_users_local.addLocal
-
-- set_fact:
-    users: "{{ its_users.users + [ localuser ]}}"
-  when: its_users_local.addLocal
-
-- set_fact:
-    users: "{{ its_users.users }}"
-  when: not its_users_local.addLocal
-
 - name: "Make sure the local user commands exist."
   package:
     name: libuser
@@ -93,7 +72,7 @@
     name: "{{ item.gid|lower }}"
     gid: "{{ item.gidnumber }}"
     state: "present"
-  with_items: "{{ users }}"
+  with_items: "{{ its_users.users }}"
 
 - name: "Create the passwd and hash entries."
   user:
@@ -110,7 +89,7 @@
     state: "present"
     uid: "{{ item.uidnumber }}"
 #    local: true   # The local command does not honour the -m flag for creating the homes, only the -M for NOT creating homes.
-  with_items: "{{ users }}"
+  with_items: "{{ its_users.users }}"
   register: homes_created
 
 - name: "Remove old ansible managed users"
