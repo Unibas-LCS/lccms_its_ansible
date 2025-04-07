@@ -15,7 +15,7 @@
 # |groups     |yes       |the list (array) of group names of which the user belongs to in addition to the main group.  |
 # |mode       |no        |The quoted octal value used to initially set the mode of the user's home directory.  |
 # |quota      |no        |The amount of allowable disk space for the user's home.  |
-# |passwd     |no        |Only set if a password is to be set on creation of the account. This is ignored if already set. Defaults to *.  |
+# |passwd     |no        |The hash to set on creation of the account. This is ignored if already set. Defaults to *.  |
 # An example:
 # <code>
 # - uid: frank
@@ -30,6 +30,18 @@
 #   shell: /bin/bash
 #   mode: "0700"
 # </code>
+
+# Do we need to add any cmdb user?
+- set_fact:
+    addLocal: "{{ (cmdb.Unibas_MDMLCCMSAuthMethod in ['local', 'password']) and not ((cmdb.Owner == '') or (cmdb.Owner == None) or (cmdb.Owner is undefined)) }}"
+
+- set_fact:
+    users: "{{ its_users.users + [ cmdb.User ]}}"
+  when: addLocal
+
+- set_fact:
+    users: "{{ its_users.users }}"
+  when: not addLocal
 
 - name: "Make sure the local user commands exist."
   package:
@@ -71,7 +83,7 @@
     name: "{{ item.gid|lower }}"
     gid: "{{ item.gidnumber }}"
     state: "present"
-  with_items: "{{ its_users.users }}"
+  with_items: "{{ users }}"
 
 - name: "Create the passwd and hash entries."
   user:
@@ -81,14 +93,14 @@
     groups: "{{ item.groups|join(\",\") }}"
     append: "{{ its_users.append_groups }}"
     home: "{{ item.home }}"
-    name: "{{ item.uid }}"
+    name: "{{ item.uid|lower }}"
     password: "{{ item.passwd|default('*') }}"
     update_password: "on_create"
     shell: "{{ item.shell }}"
     state: "present"
     uid: "{{ item.uidnumber }}"
 #    local: true   # The local command does not honour the -m flag for creating the homes, only the -M for NOT creating homes.
-  with_items: "{{ its_users.users }}"
+  with_items: "{{ users }}"
   register: homes_created
 
 - name: "Remove old ansible managed users"
@@ -96,7 +108,7 @@
     name: "{{ item.split(\":\")[0] }}"
     state: absent
   with_items: '{{ansible_passwd_out.stdout_lines}}'
-  when: "item.split(':')[0] not in its_users.users|map(attribute='uid')|list()"
+  when: "item.split(':')[0] not in users|map(attribute='uid')|list()"
 
 # Once the 'local' command in the user module works properly, this will no longer be neccessary.
 - name: "Start sssd to manipulate the password database. (ignore error and state change)"
