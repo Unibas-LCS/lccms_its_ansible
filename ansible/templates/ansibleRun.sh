@@ -10,11 +10,12 @@ ROLESURI={{ lccms.rolesURI }}
 ANSIBLEDIR={{ lccms.ansibleDir }}
 ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
 HOST={{ lccms.host }}
-UNIT={{ lccms.unit }}
+UNIT={{ cmdb.Unibas_MDMLCCMSConfigPath }}
 LCCMSOS={{ lccms.os | default('') }}
 LCCMSRELEASE={{ lccms.release | default('') }}
-LCCMSCONFIGURATION={{ lccms.configuration }}   # managed, self-managed, unmanaged
-MACHINESTATE={{ lccms.status }}  # active, retired, ...
+LCCMSCONFIGURATION={{ cmdb.Unibas_Managed }}   # managed, selfmanaged, unmanaged
+MACHINESTATE={{ cmdb.Status }}  # active, retired, 'in stock', ...
+RECID={{ cmdb.RecId }}
 
 LOGFILE=/var/log/lccmsrun.log
 ACTIONDIR=/usr/local/man/ansible
@@ -81,12 +82,12 @@ outn "Checking the ansible directory ... "
 out "done."
 cd $ANSIBLEDIR
 
-outn "Updating host playbook ... "
 if [[ "$OS" != "$LCCMSOS" || "$RELEASE" != "$LCCMSRELEASE" ]]
 then
+  outn "Regenerating playbook ... "
   # Must regenerate the playbook as the OS and/or release has changed.
   /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml ${ANSIBLEDIR}/${HOST}.yml.old
-  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?unit=${UNIT}&host=${HOST}&os=${OS}&release=${RELEASE}"
+  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?recid=${RECID}&unit=${UNIT}&host=${HOST}&os=${OS}&release=${RELEASE}"
   if [[ $? == 0 ]]
   then
     /bin/rm -f ${ANSIBLEDIR}/${HOST}.yml.old
@@ -94,6 +95,7 @@ then
     /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml.old ${ANSIBLEDIR}/${HOST}.yml
   fi
 else
+  outn "Updating host playbook ... "
   # Can just update the playbook from the server if needed.
   /usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
 fi
@@ -107,7 +109,7 @@ LCRELEASE=` echo $RELEASE | /usr/bin/tr '[A-Z]' '[a-z]'`
 [ -d roles ] || /usr/bin/mkdir roles
 cd roles
 outn "Updating roles ... "
-for r in `/usr/bin/sed -n '/roles:/,$!d; / *- /s/ *- //p' ../${HOST}.yml`
+for r in `/usr/bin/sed -n '/roles:/,$!d; /^ *- /s/ *- //p' ../${HOST}.yml`
 do
   s=`echo $r | /usr/bin/sed 's/\./\//'`
   d=`/usr/bin/dirname $s`
@@ -121,7 +123,7 @@ out ""
 TAG=""
 if [[ "$LCCMSCONFIGURATION" != "managed"  || "$MACHINESTATE" == "retired" ]] # Only execute commands with the tag 'self-managed'!
 then
-  if [[ "$LCCMSCONFIGURATION" == "self-managed" ]]
+  if [[ "$LCCMSCONFIGURATION" == "selfmanaged" ]]
   then
     echo "THIS MACHINE IS SELF MANAGED!"  >>$LOGFILE
   else
@@ -129,10 +131,13 @@ then
   fi
   TAG='--tags self-managed'
 fi
+
 out "Running ansible."
 # Set the log file, then run ansible normally in order to get the colours.
 /usr/bin/rm -f ~/ansible.log
 export ANSIBLE_LOG_PATH=~/ansible.log
+# If debugging is needed, set the following: (levels 0-4) -- or use the -vvvv options
+export ANSIBLE_VERBOSITY=1
 # Now run the playbook. Save the output to a file and also show on screen.
 /usr/bin/ansible-playbook ${HOST}.yml $TAG
 # Cat the log file to the existing log file.

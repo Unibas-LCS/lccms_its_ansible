@@ -23,7 +23,7 @@
     state: absent
   register: firefox
 
-- name: Purge firefox
+- name: "Purge firefox."
   apt:
     name: firefox
     state: absent
