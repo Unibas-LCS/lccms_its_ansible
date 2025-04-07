@@ -15,7 +15,6 @@
 # |groups     |yes       |the list (array) of group names of which the user belongs to in addition to the main group.  |
 # |mode       |no        |The quoted octal value used to initially set the mode of the user's home directory.  |
 # |quota      |no        |The amount of allowable disk space for the user's home.  |
-# |localhome  |no        |Only used if the user's home is located elsewhere and automounted to a standard path.  |
 # |passwd     |no        |Only set if a password is to be set on creation of the account. This is ignored if already set. Defaults to *.  |
 # An example:
 # <code>

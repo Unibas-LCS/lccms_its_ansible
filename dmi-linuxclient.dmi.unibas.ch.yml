@@ -1,0 +1,162 @@
+---
+- hosts:
+  - localhost
+  vars:
+    its_defaultsoftware:
+      apt:
+      - ca-certificates
+      - gimp
+      - vlc
+      snap:
+      - teams-for-linux
+    dmi_cleanup:
+      execute: 'true '
+      until: "2025-01-31"
+      comment: some arbitrary string
+      private: '{{ lccms.manage }}'
+      complex:
+        one: 1
+        two:
+        - first
+        - second
+        - third
+        three:
+          ok: 1
+          nope:
+            perhaps: 0
+            definitive: true
+          oversized: This is a very long text which should be shown in its full length.
+      text: |
+        This is the text from the template!
+        <äöü> and more: & yep %
+    its_sssd:
+      users_allow: passwd
+      denied_ad_groups: ~
+      allowed_ad_groups: ~
+      allowed_ad_users: ~
+      ldap_user_gid_number: gidNumber
+    its_groups:
+      groups:
+      - name: unibas-users
+        gidnumber: 1111
+      - name: stud
+        gidnumber: 1183
+      - name: dmi-dmi
+        gidnumber: 1355
+      - name: dmi-admin_fbm
+        gidnumber: 1469
+      - name: dmi-admin_fbi
+        gidnumber: 1468
+      - name: dmi-admin
+        gidnumber: 1458
+      - name: dmi-fbi
+        gidnumber: 1767
+      - name: dmi-fbm
+        gidnumber: 1766
+      - name: dmi-admin_wiki
+        gidnumber: 1470
+      - name: dmi-sec_fbi
+        gidnumber: 1478
+      - name: dmi-admin_it
+        gidnumber: 1373
+      - name: dmi-stud_fbm
+        gidnumber: 1474
+      - name: dmi-assistent
+        gidnumber: 1476
+      - name: dmi-sec_fbm
+        gidnumber: 1479
+      - name: dmi-ga
+        gidnumber: 1465
+      - name: dmi-sec
+        gidnumber: 1459
+      - name: dmi-adm
+        gidnumber: 1869
+      - name: dmi-admin_web
+        gidnumber: 1471
+      - name: dmi-professor
+        gidnumber: 1460
+      - name: ifi
+        gidnumber: 1178
+      - name: math
+        gidnumber: 1158
+    lccms:
+      configURI: https://lccmsd.its.unibas.ch/configs/
+      requestURI: https://lccmsd.its.unibas.ch/
+      rolesURI: https://lccmsd.its.unibas.ch/roles/
+      ansibleDir: /usr/.ansible
+      ansibleDirMode: "0700"
+      localadminPwHash: $6$kqfBGbMt$qIiXldlN.63dri2AdKP0BCHR/fZvwLPLdMxF49MEkdwOq3O5vp6e2XwSpOmmJKxNrX3y8x656RXYXRa26hkkn0
+      localadminSshKeys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBdF1rJHOPqtD70psSY+6FKhWXvyr24066pXmQNG3M1s
+        jerman0000@kb-kbbp01-pdm22.pz.unibas.ch
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKMRG/GOLElALlgHqBIHD/DxVbUksLZmiE5BO5qUzO0F
+        frank@dmi-pepper.dmi.unibas.ch
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICPRWI5yZ8DyRERL7mDQ6DhAHAbwEg1R9T6Uvg2Ih5vU
+        xaciro75@dmi-squash
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBRccla2dZto3qWoG2b2mdcyzSFs7lE7AnDkZgX+Ali5
+        kinba@staley
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILKBRih1qPpWZ5XteEWnSbGIfH5kRBtzc4sQsmxIl+z6
+        tkachu0000@dmi-24-pc-01
+      department: DMI
+      group: DMI-DMI
+      reportMailTo: root-dmi@unibas.ch
+      host: dmi-linuxclient.dmi.unibas.ch
+      unit: dmi
+      computerType: laptop
+      configuration: managed
+      trequesturi: https://lccmsd.its.unibas.ch/
+      unitlist: (A Document Being Saved By Xcode 2),(A Document Being Saved By Xcode),dmi,jbh,jbh/dsbg,jbh/europa,jbh/jus,jbh/phi,jbh/wwz,klb,klb/bz,klb/bz/bioemlab,klb/bz/imcf,klb/bz/struct,klb/dpw,klb/its,klb/itsc,klb/mcf,leihs,localtest,pg,rta
+      os: Ubuntu
+      release: "24.04"
+      name: dmi-linuxclient
+      domainName: ""
+      adminRights: true
+      multiUsers: false
+      ownerUID: frank
+      status: active
+      CMDBRecId: E7407D6F3CEB4BAFB440C000CEB4AAED
+    ad:
+      ou: ou=NUX,ou=Computers,ou=DMI,ou=ITSC-JBH,dc=unibasel,dc=ads,dc=unibas,dc=ch
+    cmdb:
+      DomainName: dmi.unibas.ch
+      IPAddress: 131.152.54.86
+      MACAddress: e8:6a:64:39:d1:32
+      Manufacturer: Lenovo
+      Model: ThinkPad T480
+      Name: dmi-linuxclient
+      Owner: frank
+      RecId: E7407D6F3CEB4BAFB440C000CEB4AAED
+      SerialNumber: PF1F3XVJ
+      Status: active
+      Unibas_AdminRightsGranted: true
+      Unibas_ImpersonalDevice: false
+      Unibas_InventoryNumber: 1253862R
+      Unibas_ComputerType: ~
+      Unibas_DeviceControllerClass: ~
+      Unibas_KeyboardLayout: CH
+      Unibas_MDMLCCMSAuthGroup: dmi-dmi
+      Unibas_MDMLCCMSAuthMethod: group
+      Unibas_MDMLCCMSConfigPath: dmi
+      Unibas_MDMLCCMSRequiredPackages: ~
+      Unibas_Managed: managed
+      Unibas_OSName: ~
+      Unibas_OSRelease: ~
+      Unibas_OSVersion: ~
+      Unibas_Stationary: laptop
+      Unibas_Working_Group: dmi-dmi
+      User:
+        uid: frank
+        uidnumber: "3387"
+        gidnumber: "1178"
+        gecos: Robert Frank
+        groups:
+        - sudo
+        home: /home/frank
+        shell: /bin/bash
+        mode: "0700"
+        gid: ifi
+  roles:
+  - its.ansible
+  - its.adbind
+  - its.report
+...
