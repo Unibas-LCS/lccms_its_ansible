@@ -11,8 +11,8 @@ ANSIBLEDIR={{ lccms.ansibleDir }}
 ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
 HOST={{ lccms.host }}
 UNIT={{ cmdb.Unibas_MDMLCCMSConfigPath }}
-LCCMSOS={{ lccms.os | default('') }}
-LCCMSRELEASE={{ lccms.release | default('') }}
+LCCMSOSNAME={{ lccms.OS_Name | default('') }}
+LCCMSOSNAMEVERSION={{ lccms.OS_Version | default('') }}
 LCCMSCONFIGURATION={{ cmdb.Unibas_Managed }}   # managed, selfmanaged, unmanaged
 MACHINESTATE={{ cmdb.Status }}  # active, retired, 'in stock', ...
 RECID={{ cmdb.RecId }}
@@ -31,7 +31,7 @@ outn () {
 echo "===========================================" >$LOGFILE
 /usr/bin/date >>$LOGFILE
 
-OS=`/usr/bin/lsb_release -si`
+OSNAME=`/usr/bin/lsb_release -si`
 RELEASE=`/usr/bin/lsb_release -sr`
 
 out ""
@@ -39,8 +39,8 @@ out "Fetching the configuration for"
 out "  host: $HOST:"
 out "  unit: $UNIT"
 out "  URI: $CONFIGURI"
-out "  OS: $OS"
-out "  release: $RELEASE"
+out "  OS: $OSNAME"
+out "  version: $RELEASE"
 out ""
 
 outn "Installing required programs ... "
@@ -82,12 +82,12 @@ outn "Checking the ansible directory ... "
 out "done."
 cd $ANSIBLEDIR
 
-if [[ "$OS" != "$LCCMSOS" || "$RELEASE" != "$LCCMSRELEASE" ]]
+if [[ "$OSNAME" != "$LCCMSOSNAME" || "$RELEASE" != "$LCCMSOSNAMEVERSION" ]]
 then
   outn "Regenerating playbook ... "
   # Must regenerate the playbook as the OS and/or release has changed.
   /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml ${ANSIBLEDIR}/${HOST}.yml.old
-  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?recid=${RECID}&unit=${UNIT}&host=${HOST}&os=${OS}&release=${RELEASE}"
+  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?recid=${RECID}&unit=${UNIT}&host=${HOST}&os=${OSNAME}&version=${RELEASE}"
   if [[ $? == 0 ]]
   then
     /bin/rm -f ${ANSIBLEDIR}/${HOST}.yml.old
@@ -103,8 +103,8 @@ fi
 out "done."
 
 # All directories of OS and RELEASE are lower case
-LCOS=`echo $OS | /usr/bin/tr '[A-Z]' '[a-z]'`
-LCRELEASE=` echo $RELEASE | /usr/bin/tr '[A-Z]' '[a-z]'`
+LCOSNAME=`echo $OSNAME | /usr/bin/tr '[A-Z]' '[a-z]'`
+LCOSVERSION=` echo $RELEASE | /usr/bin/tr '[A-Z]' '[a-z]'`
 # We have the client's playbook, extract the roles and download these.
 [ -d roles ] || /usr/bin/mkdir roles
 cd roles
@@ -113,7 +113,7 @@ for r in `/usr/bin/sed -n '/roles:/,$!d; /^ *- /s/ *- //p' ../${HOST}.yml`
 do
   s=`echo $r | /usr/bin/sed 's/\./\//'`
   d=`/usr/bin/dirname $s`
-  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOS}/${LCRELEASE}/${s}/
+  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOSNAME}/${LCOSVERSION}/${s}/
   /usr/bin/ln -sfn ${s} ${r}
 done
 out "done."
