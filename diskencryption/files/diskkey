@@ -1,24 +1,23 @@
 #!/bin/bash
-# This script will allow a user to set or change the disk encyption key (password) for slot 1
+# This script will allow a user to set or change the disk encryption key (password) for slot 2
 
-DISK=`/usr/bin/cut -d" " -f1 /etc/crypttab`
-if [ ! -b /dev/$DISK ]
-then
-  DISK=${DISK%_?????}
-fi
+MAPPED_NAME=$(/usr/bin/cut -d" " -f1 /etc/crypttab)
+
+BACKING_DEV=$(/usr/sbin/cryptsetup status $MAPPED_NAME 2>/dev/null | /usr/bin/grep "device:" | /usr/bin/awk '{print $2}')
+
+echo "Using device: $BACKING_DEV for LUKS operations"
 
 case $1 in
   set)
-    echo "Please enter the administrator's password when propmted for an existing and remaining passphrase."
-    /usr/bin/sudo /usr/sbin/cryptsetup luksKillSlot /dev/$DISK 2 2>/dev/null
-    /usr/bin/sudo /usr/sbin/cryptsetup --key-slot=2 luksAddKey /dev/$DISK
+    echo "Please enter the administrator's password when prompted for an existing and remaining passphrase."
+    sudo /usr/sbin/cryptsetup luksKillSlot $BACKING_DEV 2 2>/dev/null
+    sudo /usr/sbin/cryptsetup --key-slot=2 luksAddKey $BACKING_DEV
     ;;
   change|update)
-    /usr/bin/sudo /usr/sbin/cryptsetup --key-slot=2 luksChangeKey /dev/$DISK
+    sudo /usr/sbin/cryptsetup --key-slot=2 luksChangeKey $BACKING_DEV
     ;;
   *)
     echo "Usage: diskkey set
-    diskkey update"
+       diskkey update"
     ;;
 esac
-
