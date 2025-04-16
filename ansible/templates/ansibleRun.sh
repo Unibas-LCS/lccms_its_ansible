@@ -11,8 +11,8 @@ ANSIBLEDIR={{ lccms.ansibleDir }}
 ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
 HOST={{ lccms.host }}
 UNIT={{ cmdb.Unibas_MDMLCCMSConfigPath }}
-LCCMSOSNAME={{ lccms.OS_Name | default('') }}
-LCCMSOSVERSION={{ lccms.OS_Version | default('') }}
+LCCMSOSNAME={{ lccms.OS_Name | default('') }}        # This is as from ansible.
+LCCMSOSVERSION={{ lccms.OS_Version | default('') }}  # This is as from ansible.
 LCCMSCONFIGURATION={{ cmdb.Unibas_Managed }}   # managed, selfmanaged, unmanaged
 MACHINESTATE={{ cmdb.Status }}  # active, retired, 'in stock', ...
 RECID={{ cmdb.RecId }}
@@ -82,11 +82,7 @@ outn "Checking the ansible directory ... "
 out "done."
 cd $ANSIBLEDIR
 
-# Convert to lower case for comparison.
-LCOSNAME=`echo $OSNAME | /usr/bin/tr '[A-Z]' '[a-z]'`
-LCOSVERSION=` echo $OSVERSION | /usr/bin/tr '[A-Z]' '[a-z]'`
-
-if [[ "$LCOSNAME" != "$LCCMSOSNAME" || "$LCOSVERSION" != "$LCCMSOSVERSION" ]]
+if [[ "$OSNAME" != "$LCCMSOSNAME" || "$OSVERSION" != "$LCCMSOSVERSION" ]]
 then
   outn "Regenerating playbook ... "
   # Must regenerate the playbook as the OS and/or release has changed.
@@ -106,6 +102,9 @@ fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
 
+# Convert to lower case for directory use.
+LCOSNAME=`echo $OSNAME | /usr/bin/tr '[A-Z]' '[a-z]'`
+LCOSVERSION=` echo $OSVERSION | /usr/bin/tr '[A-Z]' '[a-z]'`
 # We have the client's playbook, extract the roles and download these.
 [ -d roles ] || /usr/bin/mkdir roles
 cd roles
