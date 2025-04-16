@@ -4,4 +4,4 @@ its_fqdn:
   name: "{{ lccms.host }}"
 
 # Option The kind of host. One of: workstation | mobile
-  kind: "{{ ccmdb.Unibas_Stationary }}"
+  kind: "{{ cmdb.Unibas_Stationary }}"
