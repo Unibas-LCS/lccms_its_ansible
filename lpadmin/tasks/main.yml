@@ -1,0 +1,42 @@
+---
+- name: "Ensure lpadmin group exists"
+  group:
+    name: lpadmin
+    state: present
+
+- name: "Get list of user home directories"
+  find:
+    paths: /home
+    file_type: directory
+    depth: 1
+  register: home_dirs
+  become: no
+
+- name: "Add users to lpadmin group"
+  user:
+    name: "{{ item.pw_name }}"
+    groups: lpadmin
+    append: yes
+  loop: "{{ home_dirs.files }}"
+  when: item.path != '/home'
+  register: user_add_result
+
+- name: "Display summary"
+  debug:
+    msg: >-
+      {% set changed = [] %}
+      {% set unchanged = [] %}
+      {% for item in user_add_result.results %}
+        {% if not item.skipped | default(false) %}
+          {% if item.changed %}
+            {% set _ = changed.append(item.item.pw_name) %}
+          {% else %}
+            {% set _ = unchanged.append(item.item.pw_name) %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if changed | length > 0 %}
+      Added {{ changed | length }} user(s) to lpadmin: {{ changed | join(', ') }}
+      {% else %}
+      No changes made. Users already in lpadmin group: {{ unchanged | join(', ') }}
+      {% endif %}
