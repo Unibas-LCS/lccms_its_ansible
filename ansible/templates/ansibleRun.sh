@@ -137,7 +137,7 @@ out "Running ansible."
 /usr/bin/rm -f ~/ansible.log
 export ANSIBLE_LOG_PATH=~/ansible.log
 # If debugging is needed, set the following: (levels 0-4) -- or use the -vvvv options
-export ANSIBLE_VERBOSITY=1
+export ANSIBLE_VERBOSITY=0
 # Now run the playbook. Save the output to a file and also show on screen.
 /usr/bin/ansible-playbook ${HOST}.yml $TAG
 # Cat the log file to the existing log file.
