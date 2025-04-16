@@ -12,7 +12,7 @@ ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
 HOST={{ lccms.host }}
 UNIT={{ cmdb.Unibas_MDMLCCMSConfigPath }}
 LCCMSOSNAME={{ lccms.OS_Name | default('') }}
-LCCMSOSNAMEVERSION={{ lccms.OS_Version | default('') }}
+LCCMSOSVERSION={{ lccms.OS_Version | default('') }}
 LCCMSCONFIGURATION={{ cmdb.Unibas_Managed }}   # managed, selfmanaged, unmanaged
 MACHINESTATE={{ cmdb.Status }}  # active, retired, 'in stock', ...
 RECID={{ cmdb.RecId }}
@@ -32,7 +32,7 @@ echo "===========================================" >$LOGFILE
 /usr/bin/date >>$LOGFILE
 
 OSNAME=`/usr/bin/lsb_release -si`
-RELEASE=`/usr/bin/lsb_release -sr`
+OSVERSION=`/usr/bin/lsb_release -sr`
 
 out ""
 out "Fetching the configuration for"
@@ -40,7 +40,7 @@ out "  host: $HOST:"
 out "  unit: $UNIT"
 out "  URI: $CONFIGURI"
 out "  OS: $OSNAME"
-out "  version: $RELEASE"
+out "  version: $OSVERSION"
 out ""
 
 outn "Installing required programs ... "
@@ -82,12 +82,16 @@ outn "Checking the ansible directory ... "
 out "done."
 cd $ANSIBLEDIR
 
-if [[ "$OSNAME" != "$LCCMSOSNAME" || "$RELEASE" != "$LCCMSOSNAMEVERSION" ]]
+# Convert to lower case for comparison.
+LCOSNAME=`echo $OSNAME | /usr/bin/tr '[A-Z]' '[a-z]'`
+LCOSVERSION=` echo $OSVERSION | /usr/bin/tr '[A-Z]' '[a-z]'`
+
+if [[ "$LCOSNAME" != "$LCCMSOSNAME" || "$LCOSVERSION" != "$LCCMSOSVERSION" ]]
 then
   outn "Regenerating playbook ... "
   # Must regenerate the playbook as the OS and/or release has changed.
   /usr/bin/mv ${ANSIBLEDIR}/${HOST}.yml ${ANSIBLEDIR}/${HOST}.yml.old
-  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?recid=${RECID}&unit=${UNIT}&host=${HOST}&os=${OSNAME}&version=${RELEASE}"
+  /usr/bin/wget -q --content-disposition "${REPORTSURI}get/playbook?recid=${RECID}&unit=${UNIT}&host=${HOST}&os=${OSNAME}&version=${OSVERSION}"
   if [[ $? == 0 ]]
   then
     /bin/rm -f ${ANSIBLEDIR}/${HOST}.yml.old
@@ -102,9 +106,6 @@ fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
 
-# All directories of OS and RELEASE are lower case
-LCOSNAME=`echo $OSNAME | /usr/bin/tr '[A-Z]' '[a-z]'`
-LCOSVERSION=` echo $RELEASE | /usr/bin/tr '[A-Z]' '[a-z]'`
 # We have the client's playbook, extract the roles and download these.
 [ -d roles ] || /usr/bin/mkdir roles
 cd roles
