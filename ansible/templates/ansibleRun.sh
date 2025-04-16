@@ -134,15 +134,15 @@ fi
 
 out "Running ansible."
 # Set the log file, then run ansible normally in order to get the colours.
-/usr/bin/rm -f ~/ansible.log
-export ANSIBLE_LOG_PATH=~/ansible.log
+/usr/bin/rm -f ${ANSIBLEDIR}/ansible.log
+export ANSIBLE_LOG_PATH=${ANSIBLEDIR}/ansible.log
 # If debugging is needed, set the following: (levels 0-4) -- or use the -vvvv options
 export ANSIBLE_VERBOSITY=0
 # Now run the playbook. Save the output to a file and also show on screen.
 /usr/bin/ansible-playbook ${HOST}.yml $TAG
 # Cat the log file to the existing log file.
-/usr/bin/sed 's/[^|]*| //' ~/ansible.log >>$LOGFILE
-/usr/bin/rm ~/ansible.log
+/usr/bin/sed 's/[^|]*| //' ${ANSIBLEDIR}/ansible.log >>$LOGFILE
+/usr/bin/rm ${ANSIBLEDIR}/ansible.log
 
 if [[ "$MACHINESTATE" == "retired" || "$LCCMSCONFIGURATION" == "unmanaged" ]]
 then
