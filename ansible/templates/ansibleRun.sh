@@ -148,7 +148,7 @@ if [[ "$MACHINESTATE" == "retired" || "$LCCMSCONFIGURATION" == "unmanaged" ]]
 then
   out "The lccms configutaions will be removed from this system."
   out "All users listed in the home directory will have an entry in /etc/passwd and any external authentication will be disabled/removed."
-  out "Users which were not in /etc/passwd will have their password set to their login name."
+  out "Users which were not in /etc/passwd or had no password will have their password set to their login name."
   echo "STATUS: Ensure all users have an entry in /etc/passwd." >>$LOGFILE
   # Check that all users are in /etc/passwd:
   for f in /home/*
@@ -167,6 +167,10 @@ then
       else
         out "Could not get the password entry for user $uid."
       fi
+    elif /usr/bin/egrep "$uid:.:" /etc/shadow
+    then
+      out "Setting password for user $uid to $uid."
+      echo "$uid:$uid" |  /usr/sbin/chpasswd
     fi
   done
   echo "STATUS END" >>$LOGFILE
@@ -187,6 +191,9 @@ then
   /usr/bin/systemctl disable ansible.timer
   /usr/bin/systemctl stop ansible.service
   /usr/bin/systemctl disable ansible.service
+  /usr/bin/rm -rf /etc/systemd/system/ansible.timer
+  /usr/bin/rm -rf /etc/systemd/system/ansible.service
+  /usr/bin/systemctl daemon-reload
   # Remove all roles
   cd /usr/.ansible
   /usr/bin/rm -rf roles
