@@ -1,4 +1,14 @@
 ---
 parameters:
-  public: ~
-  private: ~
+  its_groups:
+    groups:
+      type: table
+      cols:
+        name:
+          type: string
+          cols: 32
+          label: Name
+        gidnumber:
+          type: string
+          cols: 8
+          label: ID

@@ -1,6 +1,6 @@
 ---
-# Install any listet apt and snap packages.
-- name: "Install default packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+# Install any listed apt and snap packages.
+- name: "Install default apt packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
   apt:
     name: "{{ its_defaultsoftware.apt }}"
     state: "present"

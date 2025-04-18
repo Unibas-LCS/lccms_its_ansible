@@ -1,0 +1,28 @@
+x adbind
+x ansible
+X cloud (no change)
+X eduroam (no change)
+x etckeeper (no change)
+x fail2ban (no change)
+x firewall clean up meta/params.yml
+x googlechrome (no change)
+x groups copy meta from 22
+x lccmsrepo (no change)
+x localadmin (no change)
+x lpadmin
+x mta
+x ntp (no change)
+x reconnect (no change)
+x report
+x restartnotify
+x root (no change)
+x setfqdn
+x ssh copy meta from 22
+x sssd
+x sudoers
+x swethify (no change)
+x syslog (no change)
+x uniprint (no change)
+x updates
+x users
+x zoom

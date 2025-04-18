@@ -3,5 +3,5 @@ its_fqdn:
 # String The fully qualified hostname for this host.
   name: "{{ lccms.host }}"
 
-# Option The kind of host. One of: workstation | mobile
+# Option The kind of host. One of: desktop | laptop
   kind: "{{ cmdb.Unibas_Stationary }}"

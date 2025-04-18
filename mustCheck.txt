@@ -1,0 +1,11 @@
+x cleanup
+x defaultsoftware
+x diskencryption
+x firefox   -- 24 is missing "Copy Firefox snap blocking file in place."
+x globalprotect
+x login
+x mde
+x networking
+x update2lts (only reboot as difference and non interactive in update_to_24.04.sh; no main)
+
+check for entries of mobile or workstation. MUST change to laptop and desktop

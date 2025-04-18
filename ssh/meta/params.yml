@@ -1,17 +1,15 @@
 ---
 parameters:
-  public:
-    its_ssh:
-      sshd:
-        kind: record
-        comment: |
-          Settings for the ssh daemon.</br>
-          Each entry designates an option and its value as used in the sshd configuration file.</br>
-          Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
-      ssh:
-        kind: record
-        comment: |
-          Settings for the ssh client.</br>
-          Each entry designates an option and its value as used in the sshd configuration file.
-          Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
-  private: ~
+  its_ssh:
+    sshd:
+      kind: block
+      comment: |
+        Settings for the ssh daemon.</br>
+        Each entry designates an option and its value as used in the sshd configuration file.</br>
+        Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
+    ssh:
+      kind: block
+      comment: |
+        Settings for the ssh client.</br>
+        Each entry designates an option and its value as used in the sshd configuration file.
+        Beware that the strings "yes " and "no " need to have a space or ansible will convert to boolean.
