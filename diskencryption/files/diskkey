@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script will allow a user to set or change the disk encyption key (password) for slot 1
+# This script will allow a user to set or change the disk encyption key (password) for slot 2
 
 DISK=`/usr/bin/cut -d" " -f1 /etc/crypttab`
 if [ ! -b /dev/$DISK ]

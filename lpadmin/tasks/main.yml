@@ -1,0 +1,21 @@
+---
+- name: "Ensure lpadmin group exists."
+  group:
+    name: lpadmin
+    state: present
+
+- name: "Get list of user home directories."
+  find:
+    paths: /home
+    file_type: directory
+    depth: 1
+  register: home_dirs
+
+- name: "Add users to lpadmin group."
+  user:
+    name: "{{ item.pw_name }}"
+    groups: lpadmin
+    append: yes 
+  loop: "{{ home_dirs.files }}"
+  when: item.path != '/home'
+  register: user_add_result

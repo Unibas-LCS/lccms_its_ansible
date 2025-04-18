@@ -16,14 +16,12 @@
   package:
     name: "nscd"
     state: absent
-  become: yes
 
 # ### local users only ###
 - name: "Purge all packages if local users only."
   package:
     name: "{{ item }}"
     state: absent
-  become: yes
 #  notify: "stop sssd"
   when: 'its_sssd.users_allow == "local"'
   with_items: "{{ package_list }}"
@@ -33,7 +31,6 @@
     path: "/etc/pam.d/{{ item }}"
     regexp: "pam_sss"
     state: absent
-  become: yes
   when: 'its_sssd.users_allow == "local"'
   with_items:
     - "common-account"
@@ -48,7 +45,7 @@
     owner: root
     group: root
     state: directory
-  become: yes
+  when: 'its_sssd.users_allow != "local"'
   with_items:
     - "/etc/sssd"
 
@@ -59,14 +56,12 @@
     mode: 0600
     owner: root
     group: root
-  become: true
   when: 'its_sssd.users_allow != "local"'
 
 - name: "Make sure sssd packages are installed if not local users only."
   package:
     name: "{{ item }}"
     state: present
-  become: yes
   when: 'its_sssd.users_allow != "local"'
   with_items: "{{ package_list }}"
 
@@ -82,7 +77,6 @@
     - passwd
     - group
     - shadow
-  become: yes
   when: 'its_sssd.users_allow in ["local", "passwd"]'
 
 # ### AD users ###
@@ -93,20 +87,18 @@
     regexp: '^\s*{{ item }}\s*:.*$'
     line: '{{ item }}:\t\tfiles sss'
     state: present
-  become: yes
   when: 'its_sssd.users_allow not in ["local", "passwd"]'
   with_items:
     - passwd
     - shadow
     - group
 
-- name: "Remove sss from nsswitch unless passwd, group, or shadow."
+- name: "Remove sss from nsswitch except for passwd, group, or shadow."
   replace:
     path: '/etc/nsswitch.conf'
     regexp: '^\s*(?!passwd|group|shadow)([a-z]+)\s*:\s*(.*)\s?sss(.*)$'
     replace: '\1:\t\2\3'
   notify: 'restart sssd'
-  become: yes
 
 - name: "Ensure pam is correctly set up if not local users only."
   lineinfile:
@@ -114,7 +106,6 @@
     insertafter: "{{ item.after }}"
     line: "{{ item.line }}"
     state: present
-  become: yes
   when: 'its_sssd.users_allow != "local"'
   with_items:
     - { path: "common-account",  after: 'pam_localuser.so', line: "account\t[default=bad success=ok user_unknown=ignore]\tpam_sss.so" }
@@ -127,7 +118,6 @@
     path: "/etc/pam.d/common-auth"
     regexp: 'pam_sss'
     state: absent
-  become: yes
   when: 'its_sssd.users_allow == "local"'
 
 - name: "Add automatic home creation for network users."
@@ -136,5 +126,4 @@
     insertafter: "pam_unix.so"
     line: "session\trequired\tpam_mkhomedir.so\tskel=/etc/skel/ umask=0022"
     state: present
-  become: yes
   when: 'its_sssd.users_allow  not in ["local", "passwd"]'

@@ -60,6 +60,7 @@
     name: ansible.timer
     enabled: false
     state: "stopped"
+    force: true
   register: stop_service
   when: not its_ansible.managed
   failed_when:

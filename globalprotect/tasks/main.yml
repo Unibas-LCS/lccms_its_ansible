@@ -5,10 +5,21 @@
   ansible.builtin.apt:
     name: resolvconf
     state: present
-  when: its_globalprotect.kind == 'mobile'
+  when: its_globalprotect.kind == 'laptop'
+
+- name: "Check if the lccms repo is installed"
+  stat:
+    path: "/etc/apt/sources.list.d/lccms.list"
+  register: lccmsrepo
+
+- name: "Install the Global Protect APT Package."
+  ansible.builtin.apt:
+    name: "globalprotect"
+    state: present
+  when: its_globalprotect.kind == 'laptop' and lccmsrepo.stat.exists
 
 - name: "Install the Global Protect UI packages."
   ansible.builtin.apt:
     deb: "{{ lccms.ansibleDir }}/roles/its/globalprotect/files/GlobalProtect_UI_focal_deb-6.1.3.0-703.deb"
     state: present
-  when: its_globalprotect.kind == 'mobile'
+  when: its_globalprotect.kind == 'laptop' and not lccmsrepo.stat.exists

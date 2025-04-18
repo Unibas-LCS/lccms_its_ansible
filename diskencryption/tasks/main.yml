@@ -1,5 +1,5 @@
 ---
-# Simply install the user scripts to set the password.
+# Simply install the user scripts to set the disk encryption password.
 - name: "Install utility programs to set the user disk encryption password."
   copy:
     src: "{{ item.src }}"

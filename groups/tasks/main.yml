@@ -1,12 +1,12 @@
 ---
 # Set up and maintain the list of groups which must be present on the machine.
 #
-# Each entry ''dmi_groups.groups'' in the list of groups must be a record with the keys
+# Each entry ''its_groups.groups'' in the list of groups must be a record with the keys
 #   * name: the name of the group
 #   * gidnumber: the id of the group
 #   * source: an optional string allowing to manage subsets of groups by different apps.
 
-- name: "groups: Ensure all groups are present."
+- name: "Ensure all required groups are present."
   group:
     name: "{{ item.name|lower }}"
     gid: "{{ item.gidnumber }}"

@@ -1,4 +1,7 @@
 ---
+# ATTENTION: boolean values to set in the config file MUST have a trailing space when
+# specifying them here as a string. Otherwise these will be converted to booleans,
+# however, the config file expects strings.
 its_ssh:
   sshd:
     PermitRootLogin: "without-password"

@@ -1,3 +1,3 @@
 ---
 its_ansible:
-  managed: "{{ (lccms.configuration  == 'managed') | bool }}"
+  managed: "{{ ((cmdb.Unibas_Managed  in ['managed', 'selfmanaged']) and (cmdb.Status != 'retired')) | bool }}"

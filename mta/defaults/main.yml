@@ -1,7 +1,7 @@
 ---
 its_mta:
   hostname: "{{ lccms.host }}"
-  system: "{{ lccms.computerType }}"
+  system: "{{ cmdb.Unibas_Stationary }}"
   mail_aliases:
     -
       alias: root

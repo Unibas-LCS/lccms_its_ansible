@@ -15,7 +15,7 @@
 
 - name: Retrieve the list of home directories
   ansible.builtin.command: 
-    cmd: ls /home
+    cmd: /usr/bin/ls /home
   changed_when: False
   register: home_dirs
 
