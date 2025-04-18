@@ -121,7 +121,7 @@ cd ..
 
 out ""
 TAG=""
-if [[ "$LCCMSCONFIGURATION" != "managed"  || "$MACHINESTATE" == "retired" ]] # Only execute commands with the tag 'self-managed'!
+if [[ "$LCCMSCONFIGURATION" != "Managed"  || "$MACHINESTATE" == "retired" ]] # Only execute commands with the tag 'self-managed'!
 then
   if [[ "$LCCMSCONFIGURATION" == "selfmanaged" ]]
   then
