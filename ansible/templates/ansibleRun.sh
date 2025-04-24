@@ -149,32 +149,32 @@ then
   out "The lccms configutaions will be removed from this system."
   out "All users listed in the home directory will have an entry in /etc/passwd and any external authentication will be disabled/removed."
   out "Users which were not in /etc/passwd or had no password will have their password set to their login name."
-  echo "STATUS: Ensure all users have an entry in /etc/passwd." >>$LOGFILE
-  # Check that all users are in /etc/passwd:
+  # Grab all users home directories and get the passwd entry if the uid > 1000:
+  declare -a passwd_entries
   for f in /home/*
   do
-    uid=`/usr/bin/basename $f`
-    if ! /usr/bin/grep $uid /etc/passwd >/dev/null
+    # Skip if not a directory
+    [ -d "$f" ] || continue
+
+    # Extract username from directory name
+    username=$(basename "$f")
+    passwd_entry=$(/usr/bin/getent passwd -s sss "$username")
+    if [ -n "$passwd_entry" ]
     then
-      user=`/usr/bin/getent -s sss passwd $uid`
-      if [[ $? == 0 ]]
+      uid=$(echo "$passwd_entry" | /usr/bin/cut -d: -f3)
+      if [[ "$uid" -gt 1000 ]]
       then
-        out "Adding user $uid to /etc/passwd with password $uid."
-        echo $user >>/etc/passwd
-        pw=`echo $uid | /usr/bin/mkpasswd --method=SHA-512 --stdin`
-        days=`echo $(( $(date +%s) / 86400 ))`
-        echo "$uid:$pw:$days:0:99999:7:::" >>/etc/shadow
-      else
-        out "Could not get the password entry for user $uid."
+        passwd_entries+=("$passwd_entry")
       fi
-    elif /usr/bin/egrep "$uid:.:" /etc/shadow
-    then
-      out "Setting password for user $uid to $uid."
-      echo "$uid:$uid" |  /usr/sbin/chpasswd
     fi
   done
-  echo "STATUS END" >>$LOGFILE
   echo "STATUS: Remove any directory usage." >>$LOGFILE
+  sssdstate=$(/usr/bin/systemctl is-active sssd)
+  if [[ "$sssdstate" == 'active' ]]
+  then
+    /usr/bin/systemctl stop sssd
+    /usr/bin/systemctl disable sssd
+  fi
   # Remove any sssd from /etc/nsswitch.conf (sss ) and pam (pam_sss.so)
   out "Removing sssd usage from nsswitch, if configured."
   /usr/bin/sed -i '/sss/s/sss//' /etc/nsswitch.conf
@@ -182,6 +182,26 @@ then
   do
     out "Removing sssd from pam module $f."
     /usr/bin/sed -i '/pam_sss.so/d' $f
+  done
+  echo "STATUS END" >>$LOGFILE
+  echo "STATUS: Ensure all users have an entry in /etc/passwd." >>$LOGFILE
+  # Make sure we have the mkpasswd command:
+  /usr/bin/apt -y install whois
+  for entry in "${passwd_entries[@]}"
+  do
+    uid=$(echo "$entry" | /usr/bin/cut -d: -f1)
+    if ! /usr/bin/grep $uid /etc/passwd >/dev/null
+    then
+      out "Adding user $uid to /etc/passwd with password $uid."
+      echo $entry >>/etc/passwd
+      pw=`echo $uid | /usr/bin/mkpasswd --method=SHA-512 --stdin`
+      days=`echo $(( $(date +%s) / 86400 ))`
+      echo "$uid:$pw:$days:0:99999:7:::" >>/etc/shadow
+    elif /usr/bin/egrep "$uid:.:" /etc/shadow
+    then
+      out "Setting password for user $uid to $uid."
+      echo "$uid:$uid" |  /usr/sbin/chpasswd
+    fi
   done
   echo "STATUS END" >>$LOGFILE
   echo "STATUS: Remove the management software." >>$LOGFILE
