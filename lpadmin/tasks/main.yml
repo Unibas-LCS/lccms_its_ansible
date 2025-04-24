@@ -17,5 +17,4 @@
     groups: lpadmin
     append: yes 
   loop: "{{ home_dirs.files }}"
-  when: item.path != '/home'
-  register: user_add_result
+  when: item.path != '/home' and item.pw_name != ''
