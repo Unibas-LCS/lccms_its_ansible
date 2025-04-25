@@ -1,1 +1,5 @@
 ---
+# In some rare cases we may need to have the option of running both.
+# In this case, set this value to true and the restriction will be lifted.
+its_swethify:
+  allowall: false

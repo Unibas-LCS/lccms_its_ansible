@@ -1,6 +1,7 @@
 ---
-# In some environments, it is necessary to have only one network operational, never LAN and
-# WiFi at the same time.
+# In most cases, it is desirable to have only one network operational, never LAN and
+# WiFi at the same time. In rare cases where this is necessary, set the variable
+# its_swethify.allowall to true.
 
   - name: "Install script to allow only one network at a time."
     copy:
@@ -10,3 +11,11 @@
       group: root
       mode: '0744'
     notify: 'reload NetworkManager'
+    when: not its_swethify.allowall
+
+  - name: "Remove install script to allow all networks."
+    file:
+      path: /etc/NetworkManager/dispatcher.d/70-swethify.sh
+      state: "absent"
+    notify: 'reload NetworkManager'
+    when: its_swethify.allowall
