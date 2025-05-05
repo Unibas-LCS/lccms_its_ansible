@@ -49,7 +49,7 @@
     state: present
 
 # Once the 'local' command in the user module works properly, this will no longer be neccessary.
-- name: "Check if passwd: sssd is in nsswitch."
+- name: "Check if passwd: sss is in nsswitch."
   command: "/bin/egrep 'passwd:(.*)sss' /etc/nsswitch.conf"
   failed_when: false
   changed_when: false

@@ -4,18 +4,18 @@
 # It will check for the required software, then run ansible and finally report back
 # to the service.
 
-CONFIGURI={{ lccms.configURI }}
-REPORTSURI={{ lccms.requestURI }}
-ROLESURI={{ lccms.rolesURI }}
-ANSIBLEDIR={{ lccms.ansibleDir }}
-ANSIBLEDIRMODE={{ lccms.ansibleDirMode }}
-HOST={{ lccms.host }}
-UNIT={{ cmdb.Unibas_MDMLCCMSConfigPath }}
-LCCMSOSNAME={{ lccms.OS_Name | default('') }}        # This is as from ansible.
-LCCMSOSVERSION={{ lccms.OS_Version | default('') }}  # This is as from ansible.
-LCCMSCONFIGURATION={{ cmdb.Unibas_Managed }}   # managed, selfmanaged, unmanaged
-MACHINESTATE={{ cmdb.Status }}  # active, retired, 'in stock', ...
-RECID={{ cmdb.RecId }}
+CONFIGURI='{{ lccms.configURI }}'
+REPORTSURI='{{ lccms.requestURI }}'
+ROLESURI='{{ lccms.rolesURI }}'
+ANSIBLEDIR='{{ lccms.ansibleDir }}'
+ANSIBLEDIRMODE='{{ lccms.ansibleDirMode }}'
+HOST='{{ lccms.host }}'
+UNIT='{{ cmdb.Unibas_MDMLCCMSConfigPath }}'
+LCCMSOSNAME='{{ lccms.OS_Name | default('') }}'        # This is as from ansible.
+LCCMSOSVERSION='{{ lccms.OS_Version | default('') }}'  # This is as from ansible.
+LCCMSCONFIGURATION='{{ cmdb.Unibas_Managed }}'   # managed, selfmanaged, unmanaged
+MACHINESTATE='{{ cmdb.Status }}'  # active, retired, 'in stock', ...
+RECID='{{ cmdb.RecId }}'
 
 LOGFILE=/var/log/lccmsrun.log
 ACTIONDIR=/usr/local/man/ansible
