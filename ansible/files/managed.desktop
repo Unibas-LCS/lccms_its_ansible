@@ -6,4 +6,4 @@ Terminal=false
 Exec=/usr/bin/firefox /usr/local/man/ansible/actions.html
 Name=Management Activities
 Comment=Show what the management system did.
-Icon=/usr/share/icons/mdi--ansible.svg
+Icon=/usr/share/icons/lccm-logo.svg

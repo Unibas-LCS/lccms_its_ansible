@@ -13,7 +13,7 @@
 
 - name: "Install the ansible icon."
   ansible.builtin.copy:
-    src: mdi--ansible.svg
+    src: lccm-logo.svg
     dest: /usr/share/icons/
   when: its_ansible.managed
   tags: self-managed
