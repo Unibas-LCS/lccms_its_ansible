@@ -5,6 +5,20 @@
 #   systemctl list-timers
 # and look for the ansible.timer entry
 #
+- name: "Wait until apt lock is released"
+  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | /usr/bin/wc -l
+  register: lock
+  until: lock.stdout == "0"
+  retries: 10
+  delay: 30
+
+- name: "Wait until apt lock_frontend is released"
+  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | /usr/bin/wc -l
+  register: lock_frontend
+  until: lock_frontend.stdout == "0"
+  retries: 10
+  delay: 30
+
 - name: "Install ansible."
   apt:
     name: ansible
@@ -21,7 +35,7 @@
 - name: "Install the desktop launcher."
   ansible.builtin.copy:
     src: managed.desktop
-    dest: /usr/share/applications/ansible-managed.desktop
+    dest: /usr/share/applications/lccm-managed.desktop
   when: its_ansible.managed
   tags: self-managed
 
@@ -30,7 +44,7 @@
     dest: "{{ item }}"
     state: absent
   with_items:
-    - /usr/share/icons/mdi--ansible.svg
+    - /usr/share/icons/lccm-logo.svg
     - /usr/share/applications/ansible-managed.desktop
   when: not its_ansible.managed
 
