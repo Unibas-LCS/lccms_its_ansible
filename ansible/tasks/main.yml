@@ -45,7 +45,7 @@
     state: absent
   with_items:
     - /usr/share/icons/lccm-logo.svg
-    - /usr/share/applications/ansible-managed.desktop
+    - /usr/share/applications/lccm-managed.desktop
   when: not its_ansible.managed
 
 - name: "Install the ansible execution script."
