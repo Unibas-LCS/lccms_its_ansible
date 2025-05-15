@@ -6,9 +6,17 @@
       ansible.builtin.get_url:
         url: "{{ lccmsrepo.uri }}/public.gpg"
         dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+        force: true
+      register: lccms_key
 
-    - name: Write repository file.
-      ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} jammy_unibas main"
-        state: present
-        filename: lccms
+- name: Remove repo file if key changed
+  file:
+    path: /etc/apt/sources.list.d/lccms.list
+    state: absent
+  when: lccms_key is changed
+
+- name: Write repository file.
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} {{ ansible_distribution_release }}_unibas main"
+    state: present
+    filename: lccms
