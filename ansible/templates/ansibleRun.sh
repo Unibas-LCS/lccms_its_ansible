@@ -217,8 +217,9 @@ response=$(/usr/bin/curl -s -o /tmp/response.html -w '%{response_code}' --form "
 if [[ $? == 0 && $response == "200" ]]
 then
   /bin/mv -f /tmp/response.html ${ACTIONDIR}/actions.html
-  /usr/bin/ln ${ACTIONDIR}/actions.html ${ACTIONDIR}/actions_en.html
-  /usr/bin/ln ${ACTIONDIR}/actions.html ${ACTIONDIR}/actions_de.html
+  cd ${ACTIONDIR}
+  /usr/bin/ln actions.html actions_en.html
+  /usr/bin/ln actions.html actions_de.html
 else
   /bin/rm -f /tmp/response.html
 fi
