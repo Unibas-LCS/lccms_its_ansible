@@ -6,7 +6,7 @@
 # and look for the ansible.timer entry
 #
 - name: "Wait until apt lock is released"
-  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | wc -l
+  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
   register: lock
   until: lock.stdout == "0"
   retries: 10
@@ -14,7 +14,7 @@
   changed_when: false
 
 - name: "Wait until apt lock_frontend is released"
-  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | wc -l
+  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
   register: lock_frontend
   until: lock_frontend.stdout == "0"
   retries: 10
