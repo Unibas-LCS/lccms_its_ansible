@@ -50,6 +50,22 @@
     - /usr/share/applications/lccm-managed.desktop
   when: not its_ansible.managed
 
+- name: "Download the user information if newer."
+  get_url:
+    url: "{{ its_ansible.infoURL }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+    use_etag: yes
+    use_last_modified: yes
+    mode: '0644'
+  register: downloaded_tarball
+
+- name: Extract tarball if it was downloaded
+  unarchive:
+    src: "{{ its_ansible.infoDir }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+    remote_src: yes
+  when: downloaded_tarball.changed
+
 - name: "Install the ansible execution script."
   ansible.builtin.template:
     src: ansibleRun.sh

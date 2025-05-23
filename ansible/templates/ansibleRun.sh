@@ -16,9 +16,9 @@ LCCMSOSVERSION='{{ lccms.OS_Version | default('') }}'  # This is as from ansible
 LCCMSCONFIGURATION='{{ cmdb.Unibas_Managed }}'   # managed, selfmanaged, unmanaged
 MACHINESTATE='{{ cmdb.Status }}'  # active, retired, 'in stock', ...
 RECID='{{ cmdb.RecId }}'
+ACTIONDIR='{{ lccms.userInfoDir }}'   # /usr/local/man/ansible
 
 LOGFILE=/var/log/lccmsrun.log
-ACTIONDIR=/usr/local/man/ansible
 
 out() {
   echo "$1" | /usr/bin/tee -a $LOGFILE
@@ -213,14 +213,14 @@ then
 fi
 # Send the last log entry to the controller:
 out "Returning log to service and updating report."
-response=$(/usr/bin/curl -s -o /tmp/response.html -w '%{response_code}' --form "host=$HOST" --form "unit=$UNIT" --form "logs=@$LOGFILE" ${REPORTSURI}put/log)
+response=$(/usr/bin/curl -s -o /tmp/response.zip -w '%{response_code}' --form "host=$HOST" --form "unit=$UNIT" --form "logs=@$LOGFILE" ${REPORTSURI}put/log)
 if [[ $? == 0 && $response == "200" ]]
 then
-  /bin/mv -f /tmp/response.html ${ACTIONDIR}/actions.html
+  /bin/mv -f /tmp/response.zip ${ACTIONDIR}/actions.zip
   cd ${ACTIONDIR}
-  /usr/bin/ln actions.html actions_en.html
-  /usr/bin/ln actions.html actions_de.html
+  /usr/bin/unzip actions.zip
+  /usr/bin/rm -f actions.zip
 else
-  /bin/rm -f /tmp/response.html
+  /bin/rm -f /tmp/response.zip
 fi
 
