@@ -1,3 +1,5 @@
 ---
 its_ansible:
   managed: "{{ ((cmdb.Unibas_Managed  in ['managed', 'selfmanaged']) and (cmdb.Status != 'retired')) | bool }}"
+  infoDir: "{{ lccms.userInfoDir }}"
+  infoURL: "{{ lccms.requestURI }}/info"

@@ -16,9 +16,9 @@ LCCMSOSVERSION='{{ lccms.OS_Version | default('') }}'  # This is as from ansible
 LCCMSCONFIGURATION='{{ cmdb.Unibas_Managed }}'   # managed, selfmanaged, unmanaged
 MACHINESTATE='{{ cmdb.Status }}'  # active, retired, 'in stock', ...
 RECID='{{ cmdb.RecId }}'
+ACTIONDIR='{{ lccms.userInfoDir }}'   # /usr/local/man/ansible
 
 LOGFILE=/var/log/lccmsrun.log
-ACTIONDIR=/usr/local/man/ansible
 
 out() {
   echo "$1" | /usr/bin/tee -a $LOGFILE
@@ -149,32 +149,32 @@ then
   out "The lccms configutaions will be removed from this system."
   out "All users listed in the home directory will have an entry in /etc/passwd and any external authentication will be disabled/removed."
   out "Users which were not in /etc/passwd or had no password will have their password set to their login name."
-  # Grab all users home directories and get the passwd entry if the uid > 1000:
-  declare -a passwd_entries
+  echo "STATUS: Ensure all users have an entry in /etc/passwd." >>$LOGFILE
+  # Check that all users are in /etc/passwd:
   for f in /home/*
   do
-    # Skip if not a directory
-    [ -d "$f" ] || continue
-
-    # Extract username from directory name
-    username=$(basename "$f")
-    passwd_entry=$(/usr/bin/getent passwd -s sss "$username")
-    if [ -n "$passwd_entry" ]
+    uid=`/usr/bin/basename $f`
+    if ! /usr/bin/grep $uid /etc/passwd >/dev/null
     then
-      uid=$(echo "$passwd_entry" | /usr/bin/cut -d: -f3)
-      if [[ "$uid" -gt 1000 ]]
+      user=`/usr/bin/getent -s sss passwd $uid`
+      if [[ $? == 0 ]]
       then
-        passwd_entries+=("$passwd_entry")
+        out "Adding user $uid to /etc/passwd with password $uid."
+        echo $user >>/etc/passwd
+        pw=`echo $uid | /usr/bin/mkpasswd --method=SHA-512 --stdin`
+        days=`echo $(( $(date +%s) / 86400 ))`
+        echo "$uid:$pw:$days:0:99999:7:::" >>/etc/shadow
+      else
+        out "Could not get the password entry for user $uid."
       fi
+    elif /usr/bin/egrep "$uid:.:" /etc/shadow
+    then
+      out "Setting password for user $uid to $uid."
+      echo "$uid:$uid" |  /usr/sbin/chpasswd
     fi
   done
+  echo "STATUS END" >>$LOGFILE
   echo "STATUS: Remove any directory usage." >>$LOGFILE
-  sssdstate=$(/usr/bin/systemctl is-active sssd)
-  if [[ "$sssdstate" == 'active' ]]
-  then
-    /usr/bin/systemctl stop sssd
-    /usr/bin/systemctl disable sssd
-  fi
   # Remove any sssd from /etc/nsswitch.conf (sss ) and pam (pam_sss.so)
   out "Removing sssd usage from nsswitch, if configured."
   /usr/bin/sed -i '/sss/s/sss//' /etc/nsswitch.conf
@@ -182,26 +182,6 @@ then
   do
     out "Removing sssd from pam module $f."
     /usr/bin/sed -i '/pam_sss.so/d' $f
-  done
-  echo "STATUS END" >>$LOGFILE
-  echo "STATUS: Ensure all users have an entry in /etc/passwd." >>$LOGFILE
-  # Make sure we have the mkpasswd command:
-  /usr/bin/apt -y install whois
-  for entry in "${passwd_entries[@]}"
-  do
-    uid=$(echo "$entry" | /usr/bin/cut -d: -f1)
-    if ! /usr/bin/grep $uid /etc/passwd >/dev/null
-    then
-      out "Adding user $uid to /etc/passwd with password $uid."
-      echo $entry >>/etc/passwd
-      pw=`echo $uid | /usr/bin/mkpasswd --method=SHA-512 --stdin`
-      days=`echo $(( $(date +%s) / 86400 ))`
-      echo "$uid:$pw:$days:0:99999:7:::" >>/etc/shadow
-    elif /usr/bin/egrep "$uid:.:" /etc/shadow
-    then
-      out "Setting password for user $uid to $uid."
-      echo "$uid:$uid" |  /usr/sbin/chpasswd
-    fi
   done
   echo "STATUS END" >>$LOGFILE
   echo "STATUS: Remove the management software." >>$LOGFILE
@@ -233,14 +213,15 @@ then
 fi
 # Send the last log entry to the controller:
 out "Returning log to service and updating report."
-response=$(/usr/bin/curl -s -o /tmp/response.html -w '%{response_code}' --form "host=$HOST" --form "unit=$UNIT" --form "logs=@$LOGFILE" ${REPORTSURI}put/log)
+response=$(/usr/bin/curl -s -o /tmp/response.zip -w '%{response_code}' --form "host=$HOST" --form "unit=$UNIT" --form "logs=@$LOGFILE" ${REPORTSURI}put/log)
 if [[ $? == 0 && $response == "200" ]]
 then
-  /bin/mv -f /tmp/response.html ${ACTIONDIR}/actions.html
+  /bin/mv -f /tmp/response.zip ${ACTIONDIR}/actions.zip
   cd ${ACTIONDIR}
-  /usr/bin/ln actions.html actions_en.html
-  /usr/bin/ln actions.html actions_de.html
+  /usr/bin/unzip -o -q actions.zip
+  /usr/bin/rm -f actions.zip
+  /usr/bin/ln -sf actions_en.html actions.html
 else
-  /bin/rm -f /tmp/response.html
+  /bin/rm -f /tmp/response.zip
 fi
 

@@ -6,7 +6,7 @@
 # and look for the ansible.timer entry
 #
 - name: "Wait until apt lock is released"
-  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | wc -l
+  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
   register: lock
   until: lock.stdout == "0"
   retries: 10
@@ -14,7 +14,7 @@
   changed_when: false
 
 - name: "Wait until apt lock_frontend is released"
-  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | wc -l
+  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
   register: lock_frontend
   until: lock_frontend.stdout == "0"
   retries: 10
@@ -37,7 +37,7 @@
 - name: "Install the desktop launcher."
   ansible.builtin.copy:
     src: managed.desktop
-    dest: /usr/share/applications/ansible-managed.desktop
+    dest: /usr/share/applications/lccm-managed.desktop
   when: its_ansible.managed
   tags: self-managed
 
@@ -46,9 +46,43 @@
     dest: "{{ item }}"
     state: absent
   with_items:
-    - /usr/share/icons/mdi--ansible.svg
-    - /usr/share/applications/ansible-managed.desktop
+    - /usr/share/icons/lccm-logo.svg
+    - /usr/share/applications/lccm-managed.desktop
   when: not its_ansible.managed
+  tags: self-managed
+
+- name: "Make sure the user info dir exists."
+  file:
+    path: "{{ its_ansible.infoDir }}"
+    state: directory
+  tags: self-managed
+
+- name: "Download the user information if newer."
+  get_url:
+    url: "{{ its_ansible.infoURL }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+    use_etag: yes
+    use_last_modified: yes
+    mode: '0644'
+  register: downloaded_tarball
+  when: ansible_version.full is version('2.11', '>=')
+  tags: self-managed
+
+- name: "Download the user information."
+  get_url:
+    url: "{{ its_ansible.infoURL }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+  register: downloaded_tarball
+  when: ansible_version.full is version('2.11', '<')
+  tags: self-managed
+
+- name: "Extract tarball if it was downloaded"
+  unarchive:
+    src: "{{ its_ansible.infoDir }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+    remote_src: yes
+  when: downloaded_tarball.changed
+  tags: self-managed
 
 - name: "Install the ansible execution script."
   ansible.builtin.template:
