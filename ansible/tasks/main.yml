@@ -49,6 +49,13 @@
     - /usr/share/icons/lccm-logo.svg
     - /usr/share/applications/lccm-managed.desktop
   when: not its_ansible.managed
+  tags: self-managed
+
+- name: "Make sure the user info dir exists."
+  file:
+    path: "{{ its_ansible.infoDir }}"
+    state: directory
+  tags: self-managed
 
 - name: "Download the user information if newer."
   get_url:
@@ -58,9 +65,18 @@
     use_last_modified: yes
     mode: '0644'
   register: downloaded_tarball
+  when: ansible_version.full is version('2.11', '>=')
   tags: self-managed
 
-- name: Extract tarball if it was downloaded
+- name: "Download the user information."
+  get_url:
+    url: "{{ its_ansible.infoURL }}/info.tar.gz"
+    dest: "{{ its_ansible.infoDir }}"
+  register: downloaded_tarball
+  when: ansible_version.full is version('2.11', '<')
+  tags: self-managed
+
+- name: "Extract tarball if it was downloaded"
   unarchive:
     src: "{{ its_ansible.infoDir }}/info.tar.gz"
     dest: "{{ its_ansible.infoDir }}"

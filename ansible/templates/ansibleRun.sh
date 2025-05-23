@@ -218,8 +218,9 @@ if [[ $? == 0 && $response == "200" ]]
 then
   /bin/mv -f /tmp/response.zip ${ACTIONDIR}/actions.zip
   cd ${ACTIONDIR}
-  /usr/bin/unzip actions.zip
+  /usr/bin/unzip -o -q actions.zip
   /usr/bin/rm -f actions.zip
+  /usr/bin/ln -sf actions_en.html actions.html
 else
   /bin/rm -f /tmp/response.zip
 fi
