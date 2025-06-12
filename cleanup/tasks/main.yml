@@ -2,7 +2,7 @@
 - name: "Clean up any dirty objects from no longer used configurations."
   debug:
     msg: "nothing to do!"
-  when: its_cleanup.execute
+  when: not its_cleanup.execute
 
 - name: Register a variable
   ansible.builtin.shell: dpkg -l | grep firefox
@@ -34,3 +34,13 @@
     state: absent
   loop: "{{ home_dirs.stdout_lines }}"
   ignore_errors: True
+
+- name: "Gather package information."
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: "Deinstall the Global Protect APT Package if version 6.2.1-276 is installed."
+  ansible.builtin.apt:
+    name: "globalprotect"
+    state: absent
+  when: ansible_facts.packages.globalprotect[0].version == "6.2.1-276"

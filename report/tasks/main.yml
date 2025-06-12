@@ -17,10 +17,9 @@
   ignore_errors: yes
   tags: self-managed
 
-- name: "Collect ansible, package, and shell data."
-  ansible.builtin.command: "/usr/bin/dpkg -l --no-pager"
-  changed_when: false
-  register: package_list
+- name: "Gather package information."
+  ansible.builtin.package_facts:
+    manager: auto
   tags: self-managed
 
 - name: "Check if admin rights are granted to any user in /home."
@@ -37,10 +36,10 @@
     body:
       facts: "{{ setup_res|to_json }}"
       shells: "{{ lookup('file', '/etc/shells/') }}"
-      packages: "{{ package_list.stdout }}"
       unit: "{{ its_report.unit }}"
       Unibas_AdminRightsGranted: "{{ admin_rights_granted.stdout }}"
       lccms_host: "{{ lccms.host }}"
+      packages: "{{ ansible_facts.packages|to_json }}"
     status_code: 200
   changed_when: false
   failed_when: false
