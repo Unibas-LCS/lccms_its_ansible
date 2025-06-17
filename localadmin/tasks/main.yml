@@ -1,16 +1,20 @@
 ---
 # Set or update the local administator's password hash.
 
-- name: "Check that the private group exists and has a uidnumber of 1000."
+- name: "Check for localadmin and get next free UID"
+  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/localadmin/files/uidscript.sh"
+  register: freeuid
+
+- name: "Check that the private group exists and has a uidnumber of {{ freeuid.stdout }}."
   group:
     name: "localadmin"
-    gid: 1000
+    gid: "{{ freeuid.stdout }}"
     state: present
  
 - name: "Check that the account exists and that localadmin is in the sudo group."
   user:
     name: "localadmin"
-    uid: 1000
+    uid: "{{ freeuid.stdout }}"
     group: "localadmin"
     groups: "sudo"
     append: yes
@@ -32,4 +36,3 @@
     password: "{{ its_localadmin.pwhash }}"
     update_password: always
   when: its_localadmin.pwhash != ''
-
