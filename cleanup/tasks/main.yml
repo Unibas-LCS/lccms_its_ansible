@@ -32,4 +32,6 @@
   ansible.builtin.apt:
     name: "globalprotect"
     state: absent
-  when: 'globalprotect' in ansible_facts.packages and ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
+  when: >
+    'globalprotect' in ansible_facts.packages and 
+    ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
