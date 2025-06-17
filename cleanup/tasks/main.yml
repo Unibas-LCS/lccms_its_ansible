@@ -4,6 +4,11 @@
     msg: "nothing to do!"
   when: not its_cleanup.execute
 
+- name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/vscode.sources
+    state: absent
+
 - name: "Remove update script."
   file:
     path: "/opt/update_to_24.04.sh"
@@ -27,4 +32,4 @@
   ansible.builtin.apt:
     name: "globalprotect"
     state: absent
-  when: ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
+  when: 'globalprotect' in ansible_facts.packages and ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
