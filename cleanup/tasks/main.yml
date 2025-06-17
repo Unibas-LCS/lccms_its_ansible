@@ -4,6 +4,11 @@
     msg: "nothing to do!"
   when: not its_cleanup.execute
 
+- name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/vscode.sources
+    state: absent
+
 - name: Register a variable
   ansible.builtin.shell: dpkg -l | grep firefox
   register: dpkg_output
@@ -43,4 +48,4 @@
   ansible.builtin.apt:
     name: "globalprotect"
     state: absent
-  when: ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
+  when: 'globalprotect' in ansible_facts.packages and ansible_facts.packages.globalprotect[0].version == "6.2.1-276"

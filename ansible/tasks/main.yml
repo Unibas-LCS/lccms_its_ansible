@@ -57,31 +57,20 @@
     state: directory
   tags: self-managed
 
+# We use wget as the built in get_url does not support downloading only if newer.
 - name: "Download the user information if newer."
-  get_url:
-    url: "{{ its_ansible.infoURL }}/info.tar.gz"
-    dest: "{{ its_ansible.infoDir }}"
-    use_etag: yes
-    use_last_modified: yes
-    mode: '0644'
-  register: downloaded_tarball
-  when: ansible_version.full is version('2.11', '>=')
-  tags: self-managed
-
-- name: "Download the user information."
-  get_url:
-    url: "{{ its_ansible.infoURL }}/info.tar.gz"
-    dest: "{{ its_ansible.infoDir }}"
-  register: downloaded_tarball
-  when: ansible_version.full is version('2.11', '<')
-  tags: self-managed
+  ansible.builtin.command:
+    cmd: wget -N "{{ its_ansible.infoURL }}/info.tar.gz"
+    chdir: "{{ its_ansible.infoDir }}"
+  register: wget_result
+  changed_when: "'saved' in wget_result.stderr"
 
 - name: "Extract tarball if it was downloaded"
   unarchive:
     src: "{{ its_ansible.infoDir }}/info.tar.gz"
     dest: "{{ its_ansible.infoDir }}"
     remote_src: yes
-  when: downloaded_tarball.changed
+  when: wget_result.changed
   tags: self-managed
 
 - name: "Install the ansible execution script."
