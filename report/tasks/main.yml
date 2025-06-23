@@ -23,9 +23,28 @@
   tags: self-managed
 
 - name: "Check if admin rights are granted to any user in /home."
-  command: "/bin/bash /usr/.ansible/roles/its/report/files/adrig.sh"
+  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/adrig.sh"
   register: admin_rights_granted
   changed_when: false
+  tags: self-managed
+
+- name: "Get the currently logged in users."
+  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/lastLoggedIn.sh"
+  register: logged_in_users
+  changed_when: false
+  tags: self-managed
+  
+- name: "Check if /home is encrypted."
+  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/checkEncryption.sh"
+  register: encrypted
+  changed_when: false
+  tags: self-managed
+
+- name: "Get all home directories to return as local user list"
+  find:
+    paths: /home/
+    file_type: "directory"
+  register: local_users
   tags: self-managed
 
 - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
@@ -40,8 +59,10 @@
       Unibas_AdminRightsGranted: "{{ admin_rights_granted.stdout }}"
       lccms_host: "{{ lccms.host }}"
       packages: "{{ ansible_facts.packages|to_json }}"
+      LocalUserAccounts: "{{ local_users.files | map(attribute='pw_name') | list | join(', ') }}"
+      EncryptionStatus: "{{ encrypted.stdout }}"
+      LastLoggedInUser: "{{ logged_in_users.stdout_lines | join(', ') }}"
     status_code: 200
   changed_when: false
   failed_when: false
-  ignore_errors: yes
-  tags: self-managed
+...
