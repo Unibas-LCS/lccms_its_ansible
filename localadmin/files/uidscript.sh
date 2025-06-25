@@ -9,8 +9,11 @@ i=999
 for u in $uids; do
 	if [ $u -le $i ]; then
 		if [ $u -lt $i ]; then
-			echo $i
-			exit 0
+      if ! /usr/bin/grep ':'$i':' /etc/group >/dev/null
+      then
+			  echo $i
+			  exit 0
+     fi
 		fi
 		((i--))
 	fi
