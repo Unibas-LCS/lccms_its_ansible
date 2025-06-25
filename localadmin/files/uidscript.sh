@@ -1,5 +1,5 @@
 #!/bin/bash
-localadmin_exists=`/usr/bin/grep localadmin /etc/passwd`
+localadmin_exists=`/usr/bin/grep '^localadmin:' /etc/passwd`
 if [ $? -eq 0 ]; then
 	echo $localadmin_exists | /usr/bin/cut -d":" -f3 
 	exit 0
