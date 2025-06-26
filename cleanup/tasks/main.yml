@@ -4,6 +4,11 @@
     msg: "nothing to do!"
   when: not its_cleanup.execute
 
+- name: "Remove any old ansible launcher icon."
+  file:
+    path: /usr/share/applications/ansible-managed.desktop
+    state: "absent"
+
 - name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
   ansible.builtin.file:
     path: /etc/apt/sources.list.d/vscode.sources
