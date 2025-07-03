@@ -68,6 +68,7 @@
     cmd: wget -N "{{ its_ansible.infoURL }}/info.tar.gz"
     chdir: "{{ its_ansible.infoDir }}"
   register: wget_result
+  tags: self-managed
   changed_when: "'saved' in wget_result.stderr"
 
 - name: "Extract tarball if it was downloaded"
