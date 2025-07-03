@@ -69,6 +69,7 @@
     chdir: "{{ its_ansible.infoDir }}"
   register: wget_result
   changed_when: "'saved' in wget_result.stderr"
+  tags: self-managed
 
 - name: "Extract tarball if it was downloaded"
   unarchive:
