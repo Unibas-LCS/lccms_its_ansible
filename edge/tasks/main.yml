@@ -25,6 +25,7 @@
   command:
     cmd: "/usr/bin/flatpak override com.microsoft.Edge --filesystem=/etc/opt/edge:ro"
   changed_when: false
+  when: its_edge.flatpak is true
 
 - name: Remove the edge flatpak package
   flatpak:
