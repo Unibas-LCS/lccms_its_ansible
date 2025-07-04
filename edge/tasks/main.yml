@@ -47,6 +47,7 @@
   apt:
     name: microsoft-edge-stable
     state: present
+    update_cache: yes
   when: its_edge.apt is true
 
 - name: Remove the edge apt package
