@@ -32,7 +32,7 @@
     state: absent
   when: its_edge.flatpak is false
 
-- name: Add repo using key from URL
+- name: Add the edge apt repo
   deb822_repository:
     name: microsoft-edge
     types: deb
