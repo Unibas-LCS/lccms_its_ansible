@@ -1,0 +1,12 @@
+{
+    "WebAppInstallForceList": [
+        {
+        "url": "https://teams.microsoft.com",
+        "default_launch_container": "window"
+        },
+        {
+        "url": "https://outlook.office.com",
+        "default_launch_container": "window"
+        }
+    ]
+}

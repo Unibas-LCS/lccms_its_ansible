@@ -4,6 +4,3 @@ its_defaultsoftware:
     - ca-certificates
     - gimp
     - vlc
-
-  snap: 
-    - teams-for-linux
