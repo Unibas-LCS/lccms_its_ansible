@@ -1,0 +1,70 @@
+---
+- name: Create /etc/opt/edge/policies/managed/ directory
+  file:
+    path: /etc/opt/edge/policies/managed/
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Install Teams and Outlook PWA
+  template:
+    src: policies.json
+    dest: /etc/opt/edge/policies/managed/policies.json
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install the edge flatpak package
+  flatpak:
+    name: com.microsoft.Edge
+    state: present
+  when: its_edge.flatpak is true
+
+- name: "Allow the edge flatpak app to see the config file"
+  command:
+    cmd: "/usr/bin/flatpak override com.microsoft.Edge --filesystem=/etc/opt/edge:ro"
+  changed_when: false
+
+- name: Remove the edge flatpak package
+  flatpak:
+    name: com.microsoft.Edge
+    state: absent
+  when: its_edge.flatpak is false
+
+- name: Add APT key for edge
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: its_edge.apt is true
+
+- name: Add edge apt repo
+  apt_repository:
+    filename: microsoft-edge
+    repo: deb [arch=amd64] https://packages.microsoft.com/repos/edge/ stable main
+  when: its_edge.apt is true
+
+- name: Install the edge apt package
+  apt:
+    name: microsoft-edge-stable
+    state: present
+  when: its_edge.apt is true
+
+- name: Remove the edge apt package
+  apt:
+    name: microsoft-edge-stable
+    state: absent
+  when: its_edge.apt is false
+
+- name: Remove APT key for edge
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+  when: its_edge.apt is false
+
+- name: Remove edge apt repo
+  apt_repository:
+    filename: microsoft-edge
+    repo: deb [arch=amd64] https://packages.microsoft.com/repos/edge/ stable main
+    state: absent
+  when: its_edge.apt is false
