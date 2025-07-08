@@ -5,6 +5,11 @@
 #   systemctl list-timers
 # and look for the ansible.timer entry
 #
+- name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/vscode.sources
+    state: absent
+
 - name: "Wait until apt lock is released"
   shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
   register: lock
@@ -65,6 +70,7 @@
     cmd: wget -N "{{ its_ansible.infoURL }}/info.tar.gz"
     chdir: "{{ its_ansible.infoDir }}"
   register: wget_result
+  tags: self-managed
   changed_when: "'saved' in wget_result.stderr"
 
 - name: "Extract tarball if it was downloaded"

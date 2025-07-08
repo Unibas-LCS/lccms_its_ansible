@@ -4,6 +4,7 @@
 - name: "Check for localadmin and get next free UID"
   command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/localadmin/files/uidscript.sh"
   register: freeuid
+  changed_when: false
 
 - name: "Check that the private group exists and has a uidnumber of {{ freeuid.stdout }}."
   group:

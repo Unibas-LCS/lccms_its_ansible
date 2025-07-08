@@ -9,14 +9,23 @@
         force: true
       register: lccms_key
 
-- name: Remove repo file if key changed
+- name: Remove old repo file if present
   file:
     path: /etc/apt/sources.list.d/lccms.list
+    state: absent
+
+- name: Remove repo file if key changed
+  file:
+    path: /etc/apt/sources.list.d/lccms.sources
     state: absent
   when: lccms_key is changed
 
 - name: Write repository file.
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} {{ ansible_distribution_release }}_unibas main"
-    state: present
-    filename: lccms
+  deb822_repository:
+    name: lccms
+    types: deb
+    uris: "{{ lccmsrepo.uri }}"
+    suites: "{{ ansible_distribution_release }}_unibas"
+    components: main
+    architectures: amd64
+    signed_by: /etc/apt/trusted.gpg.d/lccmsrepo.asc
