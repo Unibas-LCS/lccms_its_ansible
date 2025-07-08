@@ -8,6 +8,7 @@
     mode: 0755
     owner: root
     group: root
+  tags: self-managed
 
 - name: "Copying Onboarding Configuration from the template."
   template:
@@ -16,6 +17,7 @@
     mode: 0600
     owner: root
     group: root
+  tags: self-managed
 
 - name: "Creating Managed Configuration from the default file."
   template:
@@ -25,6 +27,7 @@
     owner: root
     group: root
   when: its_mde.alternative_file is not defined
+  tags: self-managed
 
 - name: "Creating Managed Configuration from the given file {{ its_mde.alternative_file }}."
   template:
@@ -34,12 +37,14 @@
     owner: root
     group: root
   when: its_mde.alternative_file is defined
+  tags: self-managed
 
 - name: "Add Microsoft APT key by downloading it from the microsoft packages server."
   get_url:
     url: https://packages.microsoft.com/keys/microsoft.asc
     dest: /etc/apt/keyrings/microsoft.asc
   register: microsoft_apt
+  tags: self-managed
 
 - name: "Add Microsoft apt repository for MDATP."
   apt_repository:
@@ -47,11 +52,13 @@
     update_cache: yes
     state: present
     filename: microsoft-prod
+  tags: self-managed
 
 - name: "Install Microsoft Defender."
   apt:
     name: mdatp
     state: latest
+  tags: self-managed
 
 - name: |
     Install weekly defender quick scan cronjob if not set up.</br>
@@ -63,8 +70,10 @@
     weekday: "sat"
     user: root
     job: "/bin/mdatp scan quick >> /var/log/mdatp_cron_job.log"
+  tags: self-managed
 
 - name: "Install the mdatp_cron_job logrotate file."
   copy:
     src: "mdatp_cron_job"
     dest: "/etc/logrotate.d/mdatp_cron_job"
+  tags: self-managed

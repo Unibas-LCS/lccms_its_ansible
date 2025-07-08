@@ -12,6 +12,7 @@
   retries: 10
   delay: 30
   changed_when: false
+  tags: self-managed
 
 - name: "Wait until apt lock_frontend is released"
   shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
@@ -20,6 +21,7 @@
   retries: 10
   delay: 30
   changed_when: false
+  tags: self-managed
 
 - name: "Install ansible."
   apt:
