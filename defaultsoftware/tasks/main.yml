@@ -5,8 +5,3 @@
     name: "{{ its_defaultsoftware.apt }}"
     state: "present"
     update_cache: yes
-
-- name: "Install default snap packages. </br>\n {{ its_defaultsoftware.snap | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
-  snap:
-    name: "{{ its_defaultsoftware.snap }}"
-    state: "present"
