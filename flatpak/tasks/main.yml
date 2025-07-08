@@ -1,0 +1,13 @@
+---
+- name: "Install the flatpak apt packages"
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - flatpak
+    - gnome-software-plugin-flatpak
+
+- name: "Add the flathub repo"
+  command:
+    cmd: "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
+  changed_when: False

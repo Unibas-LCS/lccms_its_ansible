@@ -64,5 +64,6 @@
       LastLoggedInUser: "{{ logged_in_users.stdout_lines | join(', ') }}"
     status_code: 200
   changed_when: false
+  tags: self-managed
   failed_when: false
 ...
