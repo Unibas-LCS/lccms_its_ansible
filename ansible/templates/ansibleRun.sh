@@ -3,6 +3,9 @@
 #
 # It will check for the required software, then run ansible and finally report back
 # to the service.
+#
+# ATTENTION: this script is documented on the intranet: https://intranet.unibas.ch/x/tKvODg Section 'The ansible Run Script'
+# Please update the documentation if you make any changes!
 
 CONFIGURI='{{ lccms.configURI }}'
 REPORTSURI='{{ lccms.requestURI }}'
