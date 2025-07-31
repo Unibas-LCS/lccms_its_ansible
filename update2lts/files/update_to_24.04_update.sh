@@ -7,9 +7,14 @@ Dpkg::Options {
 EOF
 systemctl mask suspend.target
 apt update
-apt dist-upgrade -y
-apt purge -y resolvconf
-do-release-upgrade -q DistUpgradeViewNonInteractive
-/usr/.ansible/ansibleRun.sh
+if apt dist-upgrade -y; then
+   apt purge -y resolvconf
+   /usr/bin/do-release-upgrade -q DistUpgradeViewNonInteractive
+   OUTPUT=$?
+   if [ $OUTPUT -eq 0 ]; then
+      /usr/.ansible/ansibleRun.sh
+   fi
+fi
 rm -f /etc/apt/apt.conf.d/dpkg
 systemctl unmask suspend.target
+exit $OUTPUT
