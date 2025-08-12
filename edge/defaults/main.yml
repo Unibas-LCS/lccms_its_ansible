@@ -1,4 +1,4 @@
 ---
 its_edge:
   apt: False
-  flatpak: False
+  flatpak: True
