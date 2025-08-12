@@ -1,139 +1,163 @@
 ---
+# Check for network connectivity and store result in a global fact for all roles.
 # Install the periodically called script, set up timer using system timer.
 # To check if the installation is correct and that the next execution will
 # happen, use the following command:
 #   systemctl list-timers
 # and look for the ansible.timer entry
 #
-- name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
-  ansible.builtin.file:
-    path: /etc/apt/sources.list.d/vscode.sources
-    state: absent
+- block:
+  - name: "Check for active network interfaces (excluding loopback)"
+    shell: ip link show | grep -E "state UP" | grep -v "lo:"
+    register: interface_check
+    failed_when: false
+    changed_when: false
 
-- name: "Wait until apt lock is released"
-  shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
-  register: lock
-  until: lock.stdout == "0"
-  retries: 10
-  delay: 30
-  changed_when: false
-  tags: self-managed
+  - name: "Check default route exists"
+    shell: ip route | grep -q "default"
+    register: route_check
+    failed_when: false
+    changed_when: false
 
-- name: "Wait until apt lock_frontend is released"
-  shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
-  register: lock_frontend
-  until: lock_frontend.stdout == "0"
-  retries: 10
-  delay: 30
-  changed_when: false
-  tags: self-managed
+  - name: "Test connectivity with ping (only if interface and route exist)"
+    shell: timeout {{ its_ansible.network_check_timeout }}s ping -c 1 {{ its_ansible.network_check_ping_target }} >/dev/null 2>&1
+    register: ping_check
+    failed_when: false
+    changed_when: false
+    when:
+      - interface_check.rc == 0
+      - route_check.rc == 0
 
-- name: "Install ansible."
-  apt:
-    name: ansible
-    state: present
-  tags: self-managed
+  - name: Set global network status facts
+    set_fact:
+      global_network_available: >-
+        {{
+          interface_check.rc == 0 and
+          route_check.rc == 0 and
+          ping_check.rc | default(1) == 0
+        }}
 
-- name: "Install the ansible icon."
-  ansible.builtin.copy:
-    src: lccm-logo.svg
-    dest: /usr/share/icons/
-  when: its_ansible.managed
-  tags: self-managed
+  - name: "Remove /etc/apt/sources.list.d/vscode.sources so it does not interfere with apt."
+    ansible.builtin.file:
+      path: /etc/apt/sources.list.d/vscode.sources
+      state: absent
 
-- name: "Install the desktop launcher."
-  ansible.builtin.copy:
-    src: managed.desktop
-    dest: /usr/share/applications/lccm-managed.desktop
-  when: its_ansible.managed
-  tags: self-managed
+  - name: "Wait until apt lock is released"
+    shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
+    register: lock
+    until: lock.stdout == "0"
+    retries: 10
+    delay: 30
+    changed_when: false
 
-- name: "Remove the icon and desktop launcher."
-  ansible.builtin.file:
-    dest: "{{ item }}"
-    state: absent
-  with_items:
-    - /usr/share/icons/lccm-logo.svg
-    - /usr/share/applications/lccm-managed.desktop
-  when: not its_ansible.managed
-  tags: self-managed
+  - name: "Wait until apt lock_frontend is released"
+    shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
+    register: lock_frontend
+    until: lock_frontend.stdout == "0"
+    retries: 10
+    delay: 30
+    changed_when: false
 
-- name: "Make sure the user info dir exists."
-  file:
-    path: "{{ its_ansible.infoDir }}"
-    state: directory
-  tags: self-managed
+  - name: "Install ansible."
+    apt:
+      name: ansible
+      state: present
 
-# We use wget as the built in get_url does not support downloading only if newer.
-- name: "Download the user information if newer."
-  ansible.builtin.command:
-    cmd: wget -N "{{ its_ansible.infoURL }}/info.tar.gz"
-    chdir: "{{ its_ansible.infoDir }}"
-  register: wget_result
-  tags: self-managed
-  changed_when: "'saved' in wget_result.stderr"
+  - name: "Install the ansible icon."
+    ansible.builtin.copy:
+      src: lccm-logo.svg
+      dest: /usr/share/icons/
+    when: its_ansible.managed
 
-- name: "Extract tarball if it was downloaded"
-  unarchive:
-    src: "{{ its_ansible.infoDir }}/info.tar.gz"
-    dest: "{{ its_ansible.infoDir }}"
-    remote_src: yes
-  when: wget_result.changed
-  tags: self-managed
+  - name: "Install the desktop launcher."
+    ansible.builtin.copy:
+      src: managed.desktop
+      dest: /usr/share/applications/lccm-managed.desktop
+    when: its_ansible.managed
 
-- name: "Install the ansible execution script."
-  ansible.builtin.template:
-    src: ansibleRun.sh
-    dest: /usr/.ansible/
-    mode: 0744
-  tags: self-managed
+  - name: "Remove the icon and desktop launcher."
+    ansible.builtin.file:
+      dest: "{{ item }}"
+      state: absent
+    with_items:
+      - /usr/share/icons/lccm-logo.svg
+      - /usr/share/applications/lccm-managed.desktop
+    when: not its_ansible.managed
 
-- name: "Install the ansible service."
-  ansible.builtin.copy:
-    src: ansible.service
-    dest: /etc/systemd/system/
-  when: its_ansible.managed
-  tags: self-managed
+  - name: "Make sure the user info dir exists."
+    file:
+      path: "{{ its_ansible.infoDir }}"
+      state: directory
 
-- name: "Define the repetition."
-  ansible.builtin.copy:
-    src: ansible.timer
-    dest: /etc/systemd/system/
-  when: its_ansible.managed
-  tags: self-managed
+  # We use wget as the built in get_url does not support downloading only if newer.
+  - name: "Download the user information if newer."
+    ansible.builtin.command:
+      cmd: /usr/bin/timeout 10 /usr/bin/wget -T 10 -N "{{ its_ansible.infoURL }}/info.tar.gz"
+      chdir: "{{ its_ansible.infoDir }}"
+    register: wget_result
+    changed_when:
+      - wget_result.rc == 0
+      - wget_result.stderr is defined
+      - "'saved' in wget_result.stderr"
+    ignore_errors: yes
+    when: global_network_available | default(false)
 
-- name: "Disable the timer if not managed."
-  ansible.builtin.systemd:
-    name: ansible.timer
-    enabled: false
-    state: "stopped"
-    force: true
-  register: stop_service
-  when: not its_ansible.managed
-  failed_when:
-    - stop_service.failed == true
-    - '"Could not find the requested service ansible.timer: host" not in stop_service.msg'
+  - name: "Extract tarball if it was downloaded"
+    unarchive:
+      src: "{{ its_ansible.infoDir }}/info.tar.gz"
+      dest: "{{ its_ansible.infoDir }}"
+      remote_src: yes
+    when: wget_result.changed
 
-- name: "Enable/disable the execution of the ansible script."
-  ansible.builtin.systemd:
-    name: ansible
-    enabled: "{{ its_ansible.managed }}"
-    daemon_reload: true
-  register: stop_service
-  failed_when:
-    - stop_service.failed == true
-    - '"Could not find the requested service ansible: host" not in stop_service.msg'
-  tags: self-managed
+  - name: "Install the ansible execution script."
+    ansible.builtin.template:
+      src: ansibleRun.sh
+      dest: /usr/.ansible/
+      mode: 0744
 
-## This, unfortunately, also executes the timer immediately. Not what we want!
-#- name: "Set up for hourly execution."
-#  ansible.builtin.systemd:
-#    name: ansible.timer
-#    enabled: true
+  - name: "Install the ansible service."
+    ansible.builtin.copy:
+      src: ansible.service
+      dest: /etc/systemd/system/
+    when: its_ansible.managed
 
-# This allows enabling and activating the timer in one call without running the script
-- name: "Set up for hourly execution."
-  ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
-  changed_when: false
-  when: its_ansible.managed
+  - name: "Define the repetition."
+    ansible.builtin.copy:
+      src: ansible.timer
+      dest: /etc/systemd/system/
+    when: its_ansible.managed
+
+  - name: "Disable the timer if not managed."
+    ansible.builtin.systemd:
+      name: ansible.timer
+      enabled: false
+      state: "stopped"
+      force: true
+    register: stop_service
+    when: not its_ansible.managed
+    failed_when:
+      - stop_service.failed == true
+      - '"Could not find the requested service ansible.timer: host" not in stop_service.msg'
+
+  - name: "Enable/disable the execution of the ansible script."
+    ansible.builtin.systemd:
+      name: ansible
+      enabled: "{{ its_ansible.managed }}"
+      daemon_reload: true
+    register: stop_service
+    failed_when:
+      - stop_service.failed == true
+      - '"Could not find the requested service ansible: host" not in stop_service.msg'
+
+  ## This, unfortunately, also executes the timer immediately. Not what we want!
+  #- name: "Set up for hourly execution."
+  #  ansible.builtin.systemd:
+  #    name: ansible.timer
+  #    enabled: true
+
+  # This allows enabling and activating the timer in one call without running the script
+  - name: "Set up for hourly execution."
+    ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
+    changed_when: false
+    when: its_ansible.managed
   tags: self-managed

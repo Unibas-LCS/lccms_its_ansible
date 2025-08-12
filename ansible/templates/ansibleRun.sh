@@ -100,7 +100,7 @@ then
 else
   outn "Updating host playbook ... "
   # Can just update the playbook from the server if needed.
-  /usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
+    /usr/bin/timeout 10 /usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
 fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
@@ -116,7 +116,7 @@ for r in `/usr/bin/sed -n '/roles:/,$!d; /^ *- /s/ *- //p' ../${HOST}.yml`
 do
   s=`echo $r | /usr/bin/sed 's/\./\//'`
   d=`/usr/bin/dirname $s`
-  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOSNAME}/${LCOSVERSION}/${s}/
+  /usr/bin/timeout 5 /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOSNAME}/${LCOSVERSION}/${s}/
   /usr/bin/ln -sfn ${s} ${r}
 done
 out "done."
