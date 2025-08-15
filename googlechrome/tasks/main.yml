@@ -1,23 +1,29 @@
 ---
-- name: Add Google Chrome GPG Key
-  ansible.builtin.get_url:
-    url: https://dl.google.com/linux/linux_signing_key.pub
-    dest: /etc/apt/trusted.gpg.d/google-chrome.asc
+- block:
+  - name: Add Google Chrome GPG Key
+    ansible.builtin.get_url:
+      url: https://dl.google.com/linux/linux_signing_key.pub
+      dest: /etc/apt/trusted.gpg.d/google-chrome.asc
 
-- name: Add Google Chrome Repo
-  apt_repository:
-    repo: "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main"
-    state: present
-    filename: google-chrome
+  - name: Add Google Chrome Repo
+    deb822_repository:
+      name: google-chrome
+      types: deb
+      uris: https://dl.google.com/linux/chrome/deb/
+      suites: stable
+      components: main
+      architectures: amd64
+      signed_by: /etc/apt/trusted.gpg.d/google-chrome.asc
 
-- name: Install Google Chrome
-  apt:
-    name: "google-chrome-stable"
-    state: "present"
-    update_cache: yes
+  - name: Install Google Chrome
+    apt:
+      name: "google-chrome-stable"
+      state: "present"
+      update_cache: yes
 
-- name: "Add automatic updates for Google Chrome to /etc/apt/apt.conf.d/50unattended-upgrades."
-  ansible.builtin.lineinfile:
-    path: /etc/apt/apt.conf.d/50unattended-upgrades
-    line: '        "Google LLC:stable";'
-    insertafter: 'Unattended-Upgrade::Allowed-Origins {'
+  - name: "Add automatic updates for Google Chrome to /etc/apt/apt.conf.d/50unattended-upgrades."
+    ansible.builtin.lineinfile:
+      path: /etc/apt/apt.conf.d/50unattended-upgrades
+      line: '        "Google LLC:stable";'
+      insertafter: 'Unattended-Upgrade::Allowed-Origins {'
+  when: global_network_available | default(false)

@@ -6,124 +6,125 @@
 #   any: will allow all users registered in the AD to login (along with any passwd users)
 # Forthe second option, an optional password may be set. This will then always be used and not that of sssd.
 # For the last three options, the machine must be in the universtiy network in order to install the user for the first time.
+- block:
+  - set_fact:
+      package_list:
+        - "sssd"
+        - "sssd-tools"
 
-- set_fact:
-    package_list:
-      - "sssd"
-      - "sssd-tools"
+  - name: "Purge nscd."
+    package:
+      name: "nscd"
+      state: absent
 
-- name: "Purge nscd."
-  package:
-    name: "nscd"
-    state: absent
+  # ### local users only ###
+  - name: "Purge all packages if local users only."
+    package:
+      name: "{{ item }}"
+      state: absent
+  #  notify: "stop sssd"
+    when: 'its_sssd.users_allow == "local"'
+    with_items: "{{ package_list }}"
 
-# ### local users only ###
-- name: "Purge all packages if local users only."
-  package:
-    name: "{{ item }}"
-    state: absent
-#  notify: "stop sssd"
-  when: 'its_sssd.users_allow == "local"'
-  with_items: "{{ package_list }}"
+  - name: "Ensure pam does not use sss if local users only."
+    lineinfile:
+      path: "/etc/pam.d/{{ item }}"
+      regexp: "pam_sss"
+      state: absent
+    when: 'its_sssd.users_allow == "local"'
+    with_items:
+      - "common-account"
+      - "common-auth"
+      - "common-password"
+      - "common-session"
 
-- name: "Ensure pam does not use sss if local users only."
-  lineinfile:
-    path: "/etc/pam.d/{{ item }}"
-    regexp: "pam_sss"
-    state: absent
-  when: 'its_sssd.users_allow == "local"'
-  with_items:
-    - "common-account"
-    - "common-auth"
-    - "common-password"
-    - "common-session"
+  # ### passwd and AD users ###
+  - name: "Check that we have the required directories."
+    file:
+      path: "{{ item }}"
+      owner: root
+      group: root
+      state: directory
+    when: 'its_sssd.users_allow != "local"'
+    with_items:
+      - "/etc/sssd"
 
-# ### passwd and AD users ###
-- name: "Check that we have the required directories."
-  file:
-    path: "{{ item }}"
-    owner: root
-    group: root
-    state: directory
-  when: 'its_sssd.users_allow != "local"'
-  with_items:
-    - "/etc/sssd"
+  - name: "Copy the configuration files if not local users only."
+    template:
+      src: "sssd.conf.j2"
+      dest: "/etc/sssd/sssd.conf"
+      mode: 0600
+      owner: root
+      group: root
+    when: 'its_sssd.users_allow != "local"'
 
-- name: "Copy the configuration files if not local users only."
-  template:
-    src: "sssd.conf.j2"
-    dest: "/etc/sssd/sssd.conf"
-    mode: 0600
-    owner: root
-    group: root
-  when: 'its_sssd.users_allow != "local"'
+  - name: "Make sure sssd packages are installed if not local users only."
+    package:
+      name: "{{ item }}"
+      state: present
+    when: 'its_sssd.users_allow != "local"'
+    with_items: "{{ package_list }}"
 
-- name: "Make sure sssd packages are installed if not local users only."
-  package:
-    name: "{{ item }}"
-    state: present
-  when: 'its_sssd.users_allow != "local"'
-  with_items: "{{ package_list }}"
+  # ### passwd users only ###
+  - name: "If local or passwd users only, make sure passwd, group, and shadow have 'files' only in nsswitch.conf."
+    lineinfile:
+      path: '/etc/nsswitch.conf'
+      backrefs: yes
+      regexp: '^({{ item }})\s*:.*'
+      line: '\1:\t\tfiles'
+      state: 'present'
+    with_items:
+      - passwd
+      - group
+      - shadow
+    when: 'its_sssd.users_allow in ["local", "passwd"]'
 
-# ### passwd users only ###
-- name: "If local or passwd users only, make sure passwd, group, and shadow have 'files' only in nsswitch.conf."
-  lineinfile:
-    path: '/etc/nsswitch.conf'
-    backrefs: yes
-    regexp: '^({{ item }})\s*:.*'
-    line: '\1:\t\tfiles'
-    state: 'present'
-  with_items:
-    - passwd
-    - group
-    - shadow
-  when: 'its_sssd.users_allow in ["local", "passwd"]'
+  # ### AD users ###
+  - name: "If not local or passwd users, add sss to passwd, group, and shadow in /etc/nsswitch.conf"
+    lineinfile:
+      path: "/etc/nsswitch.conf"
+      backrefs: yes
+      regexp: '^\s*{{ item }}\s*:.*$'
+      line: '{{ item }}:\t\tfiles sss'
+      state: present
+    when: 'its_sssd.users_allow not in ["local", "passwd"]'
+    with_items:
+      - passwd
+      - shadow
+      - group
 
-# ### AD users ###
-- name: "If not local or passwd users, add sss to passwd, group, and shadow in /etc/nsswitch.conf"
-  lineinfile:
-    path: "/etc/nsswitch.conf"
-    backrefs: yes
-    regexp: '^\s*{{ item }}\s*:.*$'
-    line: '{{ item }}:\t\tfiles sss'
-    state: present
-  when: 'its_sssd.users_allow not in ["local", "passwd"]'
-  with_items:
-    - passwd
-    - shadow
-    - group
+  - name: "Remove sss from nsswitch except for passwd, group, or shadow."
+    replace:
+      path: '/etc/nsswitch.conf'
+      regexp: '^\s*(?!passwd|group|shadow)([a-z]+)\s*:\s*(.*)\s?sss(.*)$'
+      replace: '\1:\t\2\3'
+    notify: 'restart sssd'
 
-- name: "Remove sss from nsswitch except for passwd, group, or shadow."
-  replace:
-    path: '/etc/nsswitch.conf'
-    regexp: '^\s*(?!passwd|group|shadow)([a-z]+)\s*:\s*(.*)\s?sss(.*)$'
-    replace: '\1:\t\2\3'
-  notify: 'restart sssd'
+  - name: "Ensure pam is correctly set up if not local users only."
+    lineinfile:
+      path: "/etc/pam.d/{{ item.path }}"
+      insertafter: "{{ item.after }}"
+      line: "{{ item.line }}"
+      state: present
+    when: 'its_sssd.users_allow != "local"'
+    with_items:
+      - { path: "common-account",  after: 'pam_localuser.so', line: "account\t[default=bad success=ok user_unknown=ignore]\tpam_sss.so" }
+      - { path: "common-auth",     after: 'pam_unix.so',      line: "auth\t[success=1 default=ignore]\tpam_sss.so use_first_pass" }
+      - { path: "common-password", after: 'pam_unix.so',      line: "password\tsufficient\tpam_sss.so\tuse_authtok" }
+      - { path: "common-session",  after: 'pam_unix.so|pam_mkhomedir.so', line: "session\toptional\tpam_sss.so" }
 
-- name: "Ensure pam is correctly set up if not local users only."
-  lineinfile:
-    path: "/etc/pam.d/{{ item.path }}"
-    insertafter: "{{ item.after }}"
-    line: "{{ item.line }}"
-    state: present
-  when: 'its_sssd.users_allow != "local"'
-  with_items:
-    - { path: "common-account",  after: 'pam_localuser.so', line: "account\t[default=bad success=ok user_unknown=ignore]\tpam_sss.so" }
-    - { path: "common-auth",     after: 'pam_unix.so',      line: "auth\t[success=1 default=ignore]\tpam_sss.so use_first_pass" }
-    - { path: "common-password", after: 'pam_unix.so',      line: "password\tsufficient\tpam_sss.so\tuse_authtok" }
-    - { path: "common-session",  after: 'pam_unix.so|pam_mkhomedir.so', line: "session\toptional\tpam_sss.so" }
+  - name: "Remove pam sssd if only local users."
+    lineinfile:
+      path: "/etc/pam.d/common-auth"
+      regexp: 'pam_sss'
+      state: absent
+    when: 'its_sssd.users_allow == "local"'
 
-- name: "Remove pam sssd if only local users."
-  lineinfile:
-    path: "/etc/pam.d/common-auth"
-    regexp: 'pam_sss'
-    state: absent
-  when: 'its_sssd.users_allow == "local"'
-
-- name: "Add automatic home creation for network users."
-  lineinfile:
-    path: "/etc/pam.d/common-session"
-    insertafter: "pam_unix.so"
-    line: "session\trequired\tpam_mkhomedir.so\tskel=/etc/skel/ umask=0022"
-    state: present
-  when: 'its_sssd.users_allow  not in ["local", "passwd"]'
+  - name: "Add automatic home creation for network users."
+    lineinfile:
+      path: "/etc/pam.d/common-session"
+      insertafter: "pam_unix.so"
+      line: "session\trequired\tpam_mkhomedir.so\tskel=/etc/skel/ umask=0022"
+      state: present
+    when: 'its_sssd.users_allow  not in ["local", "passwd"]'
+  when: global_network_available | default(false)

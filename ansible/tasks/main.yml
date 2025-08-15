@@ -7,19 +7,19 @@
 # and look for the ansible.timer entry
 #
 - block:
-  - name: "Check for active network interfaces (excluding loopback)"
+  - name: "Check for active network interfaces (excluding loopback)."
     shell: ip link show | grep -E "state UP" | grep -v "lo:"
     register: interface_check
     failed_when: false
     changed_when: false
 
-  - name: "Check default route exists"
+  - name: "Check default route exists."
     shell: ip route | grep -q "default"
     register: route_check
     failed_when: false
     changed_when: false
 
-  - name: "Test connectivity with ping (only if interface and route exist)"
+  - name: "Test connectivity with ping (only if interface and route exist)."
     shell: timeout {{ its_ansible.network_check_timeout }}s ping -c 1 {{ its_ansible.network_check_ping_target }} >/dev/null 2>&1
     register: ping_check
     failed_when: false
@@ -28,7 +28,7 @@
       - interface_check.rc == 0
       - route_check.rc == 0
 
-  - name: Set global network status facts
+  - name: "Set global network status facts."
     set_fact:
       global_network_available: >-
         {{
@@ -42,7 +42,7 @@
       path: /etc/apt/sources.list.d/vscode.sources
       state: absent
 
-  - name: "Wait until apt lock is released"
+  - name: "Wait until apt lock is released."
     shell: /usr/bin/lsof -w /var/lib/apt/lists/lock | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
     register: lock
     until: lock.stdout == "0"
@@ -50,7 +50,7 @@
     delay: 30
     changed_when: false
 
-  - name: "Wait until apt lock_frontend is released"
+  - name: "Wait until apt lock_frontend is released."
     shell: /usr/bin/lsof -w /var/lib/dpkg/lock-frontend | grep -v wdav | grep -v COMMAND | /usr/bin/wc -l
     register: lock_frontend
     until: lock_frontend.stdout == "0"

@@ -40,3 +40,15 @@
   when: >
     'globalprotect' in ansible_facts.packages and 
     ansible_facts.packages.globalprotect[0].version == "6.2.1-276"
+
+- name: "Remove old APT sources files."
+  file:
+    path: "/etc/apt/sources.list.d/{{ item }}"
+    state: absent
+  with_items:
+    - mozilla.list
+    - google-chrome.list
+    - microsoft-prod.list
+    - sublime-text.list
+    - docker.list
+    - vscode.list

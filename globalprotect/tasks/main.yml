@@ -1,14 +1,15 @@
 ---
 # Install the global protect VPN packages.
+- block:
+  - name: "Install resolvconf for GP."
+    ansible.builtin.apt:
+      name: systemd-resolved
+      state: present
+    when: its_globalprotect.kind == 'laptop'
 
-- name: "Install resolvconf for GP."
-  ansible.builtin.apt:
-    name: systemd-resolved
-    state: present
-  when: its_globalprotect.kind == 'laptop'
-
-- name: "Install the Global Protect APT Package."
-  ansible.builtin.apt:
-    name: "globalprotect"
-    state: present
-  when: its_globalprotect.kind == 'laptop'
+  - name: "Install the Global Protect APT Package."
+    ansible.builtin.apt:
+      name: "globalprotect"
+      state: present
+    when: its_globalprotect.kind == 'laptop'
+  when: global_network_available | default(false)

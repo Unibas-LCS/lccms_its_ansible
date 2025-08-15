@@ -1,31 +1,37 @@
 ---
 # Installs the LCCMS repository.
-- name: Install the repository.
-  block:
-    - name: Install the LCCMS Key
-      ansible.builtin.get_url:
-        url: "{{ lccmsrepo.uri }}/public.gpg"
-        dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
-        force: true
-      register: lccms_key
+- block:
+  - name: Install the LCCMS Key
+    ansible.builtin.get_url:
+      url: "{{ lccmsrepo.uri }}/public.gpg"
+      dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+      force: true
+    register: lccms_key
 
-- name: Remove old repo file if present
-  file:
-    path: /etc/apt/sources.list.d/lccms.list
-    state: absent
+  - name: Remove old repo file if present
+    file:
+      path: /etc/apt/sources.list.d/lccms.list
+      state: absent
 
-- name: Remove repo file if key changed
-  file:
-    path: /etc/apt/sources.list.d/lccms.sources
-    state: absent
-  when: lccms_key is changed
+  - name: Remove repo file if key changed
+    file:
+      path: /etc/apt/sources.list.d/lccms.sources
+      state: absent
+    when: lccms_key is changed
 
-- name: Write repository file.
-  deb822_repository:
-    name: lccms
-    types: deb
-    uris: "{{ lccmsrepo.uri }}"
-    suites: "{{ ansible_distribution_release }}_unibas"
-    components: main
-    architectures: amd64
-    signed_by: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+  - name: Write repository file.
+    deb822_repository:
+      name: lccms
+      types: deb
+      uris: "{{ lccmsrepo.uri }}"
+      suites: "{{ ansible_distribution_release }}_unibas"
+      components: main
+      architectures: amd64
+      signed_by: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+    register: repo_added
+    
+  - name: "Update apt cache if repo changed."
+    ansible.builtin.apt:
+      update_cache: yes
+    when: repo_added is changed
+  when: global_network_available | default(false)
