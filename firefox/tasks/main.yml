@@ -1,54 +1,57 @@
 ---
-- name: "Download Firefox APT Keyring."
-  get_url:
-    url: https://packages.mozilla.org/apt/repo-signing-key.gpg
-    dest: /etc/apt/keyrings/packages.mozilla.org.asc
-    mode: '644'
+# We need to check if a non snap version was already installed. If so, we should not do anything.
+- block:
+  - name: "Download Firefox APT Keyring."
+    get_url:
+      url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+      dest: /etc/apt/keyrings/packages.mozilla.org.asc
+      mode: '644'
 
-- name: "Add Firefox Repository."
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
-    state: present
-    filename: mozilla
+  - name: "Add Firefox Repository."
+    apt_repository:
+      repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
+      state: present
+      filename: mozilla
 
-- name: "Copy Mozilla APT prioritization file in place."
-  copy:
-    src: mozilla
-    dest: /etc/apt/preferences.d/mozilla
-    mode: '0644'
+  - name: "Copy Mozilla APT prioritization file in place."
+    copy:
+      src: mozilla
+      dest: /etc/apt/preferences.d/mozilla
+      mode: '0644'
 
-- name: "Copy Firefox snap blocking file in place."
-  copy:
-    src: firefox
-    dest: /etc/apt/preferences.d/block-firefox-snap
-    mode: '0644'
+  - name: "Copy Firefox snap blocking file in place."
+    copy:
+      src: firefox
+      dest: /etc/apt/preferences.d/block-firefox-snap
+      mode: '0644'
 
-- name: "Uninstall snap Firefox."
-  snap:
-    name: firefox
-    state: absent
-  register: firefox
+  - name: "Uninstall snap Firefox."
+    snap:
+      name: firefox
+      state: absent
+    register: firefox
 
-- name: "Purge any old firefox if snap was removed."
-  apt:
-    name: firefox
-    state: absent
-  when: firefox is changed
+  - name: "Purge any old firefox if snap was removed."
+    apt:
+      name: firefox
+      state: absent
+    when: firefox is changed
 
-- name: "Install Firefox package."
-  apt:
-    name: "firefox"
-    state: "present"
-    update_cache: yes
-  register: firefox_apt
+  - name: "Install Firefox package."
+    apt:
+      name: "firefox"
+      state: "present"
+      update_cache: yes
+    register: firefox_apt
 
-- name: "Adapt favorites if newly installed."
-  replace:
-    path: "/usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override"
-    regexp: 'firefox_firefox.desktop'
-    replace: 'firefox.desktop'
-  when: firefox_apt is changed
+  - name: "Adapt favorites if newly installed."
+    replace:
+      path: "/usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override"
+      regexp: 'firefox_firefox.desktop'
+      replace: 'firefox.desktop'
+    when: firefox_apt is changed
 
-- name: "Compile schemas if newly installed."
-  command: "/usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas/"
-  when: firefox_apt is changed
+  - name: "Compile schemas if newly installed."
+    command: "/usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas/"
+    when: firefox_apt is changed
+  when: global_network_available | default(false)

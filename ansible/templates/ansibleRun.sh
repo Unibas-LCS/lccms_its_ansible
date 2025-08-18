@@ -7,6 +7,17 @@
 # ATTENTION: this script is documented on the intranet: https://intranet.unibas.ch/x/tKvODg Section 'The ansible Run Script'
 # Please update the documentation if you make any changes!
 
+# As the script may be updated by ansible, we need to run a safe copy, not the actual script.
+SCRIPT_PATH="$(readlink -f "$0")"
+TEMP_SCRIPT="/tmp/ansible_runner_$$.sh"
+
+# If we're not already running from temp, copy ourselves there
+if [[ "$SCRIPT_PATH" != "$TEMP_SCRIPT" ]]; then
+    cp "$SCRIPT_PATH" "$TEMP_SCRIPT"
+    chmod +x "$TEMP_SCRIPT"
+    exec "$TEMP_SCRIPT" "$@"
+fi
+
 CONFIGURI='{{ lccms.configURI }}'
 REPORTSURI='{{ lccms.requestURI }}'
 ROLESURI='{{ lccms.rolesURI }}'
@@ -100,7 +111,7 @@ then
 else
   outn "Updating host playbook ... "
   # Can just update the playbook from the server if needed.
-  /usr/bin/wget -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
+  /usr/bin/timeout 10 /usr/bin/wget -T 10 -q -N --no-parent -l 8 -nH --cut-dirs=2 -R '*.html*' --execute='robots = off' ${CONFIGURI}$UNIT/${HOST}.yml
 fi
 # It's ok to fail, we will just continue with the old one.
 out "done."
@@ -116,7 +127,7 @@ for r in `/usr/bin/sed -n '/roles:/,$!d; /^ *- /s/ *- //p' ../${HOST}.yml`
 do
   s=`echo $r | /usr/bin/sed 's/\./\//'`
   d=`/usr/bin/dirname $s`
-  /usr/bin/wget -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOSNAME}/${LCOSVERSION}/${s}/
+  /usr/bin/timeout 5 /usr/bin/wget -T 5 -q -N -e robots=off --timestamping --no-parent -r -l 8 -nH --cut-dirs=3 -R '*.html*' --execute='robots = off' ${ROLESURI}${LCOSNAME}/${LCOSVERSION}/${s}/
   /usr/bin/ln -sfn ${s} ${r}
 done
 out "done."

@@ -1,30 +1,30 @@
 ---
 # Set up uni print printer service. We will only do this once. If the user removes this package, it will be re-installed.
+- block:
+  - name: "Check if uniprint is already installed (ignore error)."
+    command: "/usr/bin/dpkg -s cque-en"
+    register: unprint_installed
+    changed_when: no
+    ignore_errors: yes
 
-- name: "Check if uniprint is already installed (ignore error)."
-  command: "/usr/bin/dpkg -s cque-en"
-  register: unprint_installed
-  changed_when: no
-  ignore_errors: yes
+  - name: "Install prerequisites for uniprint."
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - smbclient
+      - cups
+    when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
 
-- name: "Install prerequisites for uniprint."
-  apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - smbclient
-    - cups
-  when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
+  - name: "Install debian packages for uniprint."
+    apt:
+      deb: "{{ item }}"
+      state: present
+    with_items:
+      - "{{ lccms.ansibleDir }}/roles/its/uniprint/files/cque-en-4.0-10.x86_64.deb"
+    when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
 
-- name: "Install debian packages for uniprint."
-  apt:
-    deb: "{{ item }}"
-    state: present
-  with_items:
-    - "{{ lccms.ansibleDir }}/roles/its/uniprint/files/cque-en-4.0-10.x86_64.deb"
-  when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
-
-- name: "Add the UNI printer as default printer."
-  command: "/usr/sbin/lpadmin -p UNIprintLPR -E -m 'Canon iR-ADV C5550/C5560 III PS' -v 'lpd://its-uprint-uxp1.its.unibas.ch/UNIprintLPR' -D UNIprint -P '/opt/cel/ppd/cel-iradvc5550III-ps-en.ppd.gz'"
-  when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
-
+  - name: "Add the UNI printer as default printer."
+    command: "/usr/sbin/lpadmin -p UNIprintLPR -E -m 'Canon iR-ADV C5550/C5560 III PS' -v 'lpd://its-uprint-uxp1.its.unibas.ch/UNIprintLPR' -D UNIprint -P '/opt/cel/ppd/cel-iradvc5550III-ps-en.ppd.gz'"
+    when: (unprint_installed.rc is defined) and (unprint_installed.rc != 0)
+  when: global_network_available | default(false)

@@ -1,22 +1,30 @@
 ---
 # Installs the LCCMS repository.
-- name: Install the repository.
-  block:
-    - name: Install the LCCMS Key
-      ansible.builtin.get_url:
-        url: "{{ lccmsrepo.uri }}/public.gpg"
-        dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
-        force: true
-      register: lccms_key
+- block:
+  - name: Install the LCCMS Key
+    ansible.builtin.get_url:
+      url: "{{ lccmsrepo.uri }}/public.gpg"
+      dest: /etc/apt/trusted.gpg.d/lccmsrepo.asc
+      force: true
+    register: lccms_key
 
-- name: Remove repo file if key changed
-  file:
-    path: /etc/apt/sources.list.d/lccms.list
-    state: absent
-  when: lccms_key is changed
+  - name: Remove repo file if key changed
+    file:
+      path: /etc/apt/sources.list.d/lccms.list
+      state: absent
+    when: lccms_key is changed | default(false)
 
-- name: Write repository file.
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} {{ ansible_distribution_release }}_unibas main"
-    state: present
-    filename: lccms
+  - name: Write repository file.
+    ansible.builtin.apt_repository:
+      repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/lccmsrepo.asc] {{ lccmsrepo.uri }} {{ ansible_distribution_release }}_unibas main"
+      state: present
+      filename: lccms
+    register: repo_added
+
+  - name: "Update apt cache if repo changed."
+    ansible.builtin.apt:
+      update_cache: yes
+    when: repo_added is changed
+
+  when: global_network_available | default(false)
+

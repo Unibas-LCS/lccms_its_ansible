@@ -11,13 +11,13 @@
       owner: root
       group: root
 
-  - name: Install Teams and Outlook PWA
-    template:
-      src: policies.json
-      dest: /etc/opt/edge/policies/managed/policies.json
-      owner: root
-      group: root
-      mode: 0644
+#  - name: Install Teams and Outlook PWA
+#    template:
+#      src: policies.json
+#      dest: /etc/opt/edge/policies/managed/policies.json
+#      owner: root
+#      group: root
+#      mode: 0644
 
   - name: Install the edge flatpak package
     flatpak:
@@ -25,11 +25,11 @@
       state: present
     when: its_edge.flatpak is true
 
-  - name: "Allow the edge flatpak app to see the config file"
-    command:
-      cmd: "/usr/bin/flatpak override com.microsoft.Edge --filesystem=/etc/opt/edge:ro"
-    changed_when: false
-    when: its_edge.flatpak is true
+#  - name: "Allow the edge flatpak app to see the config file"
+#    command:
+#      cmd: "/usr/bin/flatpak override com.microsoft.Edge --filesystem=/etc/opt/edge:ro"
+#    changed_when: false
+#    when: its_edge.flatpak is true
 
   - name: Remove the edge flatpak package
     flatpak:

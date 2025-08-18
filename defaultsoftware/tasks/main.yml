@@ -1,7 +1,9 @@
 ---
+- block:
 # Install any listed apt and snap packages.
-- name: "Install default apt packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
-  apt:
-    name: "{{ its_defaultsoftware.apt }}"
-    state: "present"
-    update_cache: yes
+  - name: "Install default apt packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+    apt:
+      name: "{{ its_defaultsoftware.apt }}"
+      state: "present"
+      update_cache: yes
+  when: global_network_available | default(false)

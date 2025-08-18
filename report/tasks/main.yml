@@ -1,69 +1,64 @@
 ---
-- setup:
-  register: setup_res
-  tags: self-managed
 
-- name: "Check system state. (Ignore error)"
-  command: 'systemctl is-system-running'
-  changed_when: false
-  failed_when: false
-  register: 'systemd_state'
-  tags: self-managed
+- block:
+  - setup:
+    register: setup_res
 
-- name: "Report bad system state. (Ignore error)"
-  fail:
-    msg: "systemctl reports state {{ systemd_state.stdout }}. Please check"
-  when: 'systemd_state.rc != 0'
-  ignore_errors: yes
-  tags: self-managed
+  - name: "Check system state. (Ignore error)"
+    command: 'systemctl is-system-running'
+    changed_when: false
+    failed_when: false
+    register: 'systemd_state'
 
-- name: "Gather package information."
-  ansible.builtin.package_facts:
-    manager: auto
-  tags: self-managed
+  - name: "Report bad system state. (Ignore error)"
+    fail:
+      msg: "systemctl reports state {{ systemd_state.stdout }}. Please check"
+    when: 'systemd_state.rc != 0'
+    ignore_errors: yes
 
-- name: "Check if admin rights are granted to any user in /home."
-  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/adrig.sh"
-  register: admin_rights_granted
-  changed_when: false
-  tags: self-managed
+  - name: "Gather package information."
+    ansible.builtin.package_facts:
+      manager: auto
 
-- name: "Get the currently logged in users."
-  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/lastLoggedIn.sh"
-  register: logged_in_users
-  changed_when: false
-  tags: self-managed
-  
-- name: "Check if /home is encrypted."
-  command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/checkEncryption.sh"
-  register: encrypted
-  changed_when: false
-  tags: self-managed
+  - name: "Check if admin rights are granted to any user in /home."
+    command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/adrig.sh"
+    register: admin_rights_granted
+    changed_when: false
 
-- name: "Get all home directories to return as local user list"
-  find:
-    paths: /home/
-    file_type: "directory"
-  register: local_users
-  tags: self-managed
+  - name: "Get the currently logged in users."
+    command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/lastLoggedIn.sh"
+    register: logged_in_users
+    changed_when: false
+    
+  - name: "Check if /home is encrypted."
+    command: "/bin/bash {{ lccms.ansibleDir }}/roles/its/report/files/checkEncryption.sh"
+    register: encrypted
+    changed_when: false
 
-- name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
-  uri:
-    url: "{{ its_report.server }}"
-    method: POST
-    body_format: form-urlencoded
-    body:
-      facts: "{{ setup_res|to_json }}"
-      shells: "{{ lookup('file', '/etc/shells/') }}"
-      unit: "{{ its_report.unit }}"
-      Unibas_AdminRightsGranted: "{{ admin_rights_granted.stdout }}"
-      lccms_host: "{{ lccms.host }}"
-      packages: "{{ ansible_facts.packages|to_json }}"
-      LocalUserAccounts: "{{ local_users.files | map(attribute='pw_name') | list | join(', ') }}"
-      EncryptionStatus: "{{ encrypted.stdout }}"
-      LastLoggedInUser: "{{ logged_in_users.stdout_lines | join(', ') }}"
-    status_code: 200
-  changed_when: false
+  - name: "Get all home directories to return as local user list"
+    find:
+      paths: /home/
+      file_type: "directory"
+    register: local_users
+
+  - name: "Send collected data to university server: {{ its_report.server }}. (ignore error)"
+    uri:
+      url: "{{ its_report.server }}"
+      method: POST
+      timeout: 10
+      body_format: form-urlencoded
+      body:
+        facts: "{{ setup_res|to_json }}"
+        shells: "{{ lookup('file', '/etc/shells/') }}"
+        unit: "{{ its_report.unit }}"
+        Unibas_AdminRightsGranted: "{{ admin_rights_granted.stdout }}"
+        lccms_host: "{{ lccms.host }}"
+        packages: "{{ ansible_facts.packages|to_json }}"
+        LocalUserAccounts: "{{ local_users.files | map(attribute='pw_name') | list | join(', ') }}"
+        EncryptionStatus: "{{ encrypted.stdout }}"
+        LastLoggedInUser: "{{ logged_in_users.stdout_lines | join(', ') }}"
+      status_code: 200
+    changed_when: false
+    when: global_network_available | default(false)
   tags: self-managed
-  failed_when: false
 ...
