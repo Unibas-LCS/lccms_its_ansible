@@ -1,6 +1,5 @@
 ---
 its_defaultsoftware:
-  apt:
-    - ca-certificates
-    - gimp
-    - vlc
+  apt: []
+  snap: []
+  flatpak: []

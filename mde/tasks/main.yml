@@ -36,26 +36,36 @@
       group: root
     when: its_mde.alternative_file is defined
 
-  - name: "Add Microsoft APT key by downloading it from the microsoft packages server."
-    get_url:
+  - name: "Download Microsoft GPG key."
+    ansible.builtin.get_url:
       url: https://packages.microsoft.com/keys/microsoft.asc
-      dest: /etc/apt/keyrings/microsoft.asc
-    register: microsoft_apt
+      dest: /usr/share/keyrings/microsoft.asc
+      mode: '0644'
 
-  - name: "Add Microsoft apt repository for MDATP."
-    deb822_repository:
+  - name: "Convert Microsoft GPG key to dearmored format."
+    ansible.builtin.command:
+      cmd: gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg /usr/share/keyrings/microsoft.asc
+      creates: /usr/share/keyrings/microsoft-prod.gpg
+
+  - name: "Add Microsoft Defender APT repository (Deb822 format)."
+    ansible.builtin.deb822_repository:
       name: microsoft-prod
-      types: deb
-      uris: https://packages.microsoft.com/ubuntu/22.04/prod
-      suites: jammy
-      components: main
-      architectures: arm64,armhf,amd64
-      signed_by: /etc/apt/keyrings/microsoft.asc
+      types: [deb]
+      uris: https://packages.microsoft.com/ubuntu/24.04/prod
+      suites: [noble]
+      components: [main]
+      signed_by: /usr/share/keyrings/microsoft-prod.gpg
+    register: ms_repo
+
+  - name: "Update apt cache if repository changed."
+    ansible.builtin.apt:
+      update_cache: yes
+    when: ms_repo.changed
 
   - name: "Install Microsoft Defender."
-    apt:
+    ansible.builtin.apt:
       name: mdatp
-      state: latest
+      state: present
 
   - name: |
       Install weekly defender quick scan cronjob if not set up.</br>

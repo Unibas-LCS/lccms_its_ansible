@@ -1,6 +1,14 @@
 ---
+- name: Check if Zoom is installed
+  shell: command -v zoom || dpkg -l | grep -q "^ii.*zoom"
+  register: zoom_check
+  changed_when: false
+  failed_when: false
+
 - name: "Install Zoom."
   apt:
     deb: https://zoom.us/client/latest/zoom_amd64.deb
     state: present
-  when: global_network_available | default(false)
+  when:
+    - global_network_available | default(false)
+    - zoom_check.rc != 0

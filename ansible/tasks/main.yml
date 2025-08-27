@@ -104,6 +104,24 @@
       remote_src: yes
     when: wget_result.changed
 
+  # Get the current gnome default favorites list if Ubuntu
+  - block:
+    - name: "Get current GNOME favorites."
+      command: /usr/bin/gsettings get org.gnome.shell favorite-apps
+      register: gnome_favorites
+      changed_when: false
+
+    - name: "Set its_ansible.favorites from current GNOME defaults."
+      set_fact:
+        its_ansible: "{{ its_ansible | default({}) | combine({
+          'favorites': gnome_favorites.stdout
+            | trim
+            | from_yaml
+            | map('trim')
+            | list
+        }) }}"
+    when: ansible_distribution == 'Ubuntu'
+
   - name: "Install the ansible execution script."
     ansible.builtin.template:
       src: ansibleRun.sh
@@ -155,4 +173,5 @@
     ansible.builtin.command: /usr/bin/systemctl enable --now ansible.timer
     changed_when: false
     when: its_ansible.managed
+  
   tags: self-managed

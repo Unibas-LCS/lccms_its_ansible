@@ -26,24 +26,24 @@
             "key":"archive_bomb",
             "value":"audit"
          }
-      ],
-      "cloudService":{
-         "enabled":true,
-         "diagnosticLevel":"optional",
-         "automaticSampleSubmissionConsent":"safe",
-         "automaticDefinitionUpdateEnabled":true
-      },
-      "networkProtection":{
-         "enforcementLevel":"audit"
-      },
-      "edr":{
-         "tags":[
-            {
-               "key":"GROUP",
-               "value":"{{ its_mde.defender_group_tag }}"
-            }
-         ]
-      }
+      ]
+   },
+   "cloudService":{
+      "enabled":true,
+      "diagnosticLevel":"optional",
+      "automaticSampleSubmissionConsent":"safe",
+      "automaticDefinitionUpdateEnabled":true
+   },
+   "networkProtection":{
+      "enforcementLevel":"disabled"
+   },
+   "edr":{
+      "tags":[
+         {
+            "key":"GROUP",
+            "value":"{{ its_mde.defender_group_tag }}"
+         }
+      ]
    },
    "exclusionSettings":{
       "exclusions":[

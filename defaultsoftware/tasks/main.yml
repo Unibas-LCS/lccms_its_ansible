@@ -1,9 +1,38 @@
 ---
 - block:
-# Install any listed apt and snap packages.
-  - name: "Install default apt packages. </br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+# Install any listed apt, snap, or flatpak packages.
+  - name: "{{ 'Install Apt applications.</br>\n' + (its_defaultsoftware.apt | join('</br>\n')) if its_defaultsoftware.apt | length > 0 else 'No Apt applications to install' }}"
+#  - name: "Install Apt packages.</br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
     apt:
       name: "{{ its_defaultsoftware.apt }}"
       state: "present"
       update_cache: yes
+    when: its_defaultsoftware.apt | length > 0
+
+  - name: "{{ 'Install Snap applications.</br>\n' + (its_defaultsoftware.snap | join('</br>\n')) if its_defaultsoftware.snap | length > 0 else '' }}"
+    community.general.snap:
+      name: "{{ item }}"
+      state: present
+    loop: "{{ its_defaultsoftware.snap }}"
+    when: its_defaultsoftware.snap | length > 0
+
+  - name: "{{ 'Install Flatpak applications.</br>\n' + (its_defaultsoftware.flatpak | join('</br>\n')) if its_defaultsoftware.flatpak | length > 0 else '' }}"
+    community.general.flatpak:
+      name: "{{ item }}"
+      state: present
+      remote: flathub
+    loop: "{{ its_defaultsoftware.flatpak }}"
+    when: its_defaultsoftware.flatpak | length > 0
+
   when: global_network_available | default(false)
+
+- name: "Install utilities in /usr/local/bin/.<br>{{ with_items | map(attribute='src') | join('<br>') }}"
+  copy:
+    src: "{{ item.src }}"
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: "linux-mdatp-health.sh",        mode: "a+x" }
+

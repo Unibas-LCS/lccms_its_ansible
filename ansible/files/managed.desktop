@@ -1,6 +1,5 @@
-#!/usr/bin/env xdg-open
 [Desktop Entry]
-Verision=1.0
+Version=1.0
 Type=Application
 Terminal=false
 Exec=/usr/bin/firefox /usr/local/man/ansible/actions.html

@@ -1,4 +1,5 @@
 ---
+# Send a report to the server.
 - block:
   - setup:
     register: setup_res
@@ -58,5 +59,47 @@
       status_code: 200
     changed_when: false
     failed_when: false
+
+# If we have a favorites list and are fully managed,
+# add the lccms icon to the end and then install the favorites list.
+  - block:
+    - name: "Ensure lccm-managed.desktop is in favorites if list exists."
+      set_fact:
+        its_ansible: "{{ its_ansible | combine({'favorites': its_ansible.favorites + ['lccm-managed.desktop']}) }}"
+      when:
+        - its_ansible.favorites is defined
+        - "'lccm-managed.desktop' not in its_ansible.favorites"
+    
+    # Set up the favorite icon list on the left of gnome.
+    - name: "Create /etc/dconf/db/local.d directory."
+      file:
+        path: /etc/dconf/db/local.d
+        state: directory
+        mode: 0755
+        owner: root
+        group: root
+
+    - name: "Add the dconf user file"
+      copy:
+        src: user
+        dest: /etc/dconf/profile/user
+  
+    - name: "Update dconf favorites."
+      template:
+        src: 00-lccms.j2
+        dest: /etc/dconf/db/local.d/00-lccms
+      register: dconf_change
+
+    - name: "Run dconf update."
+      command: dconf update
+      when: dconf_change.changed
+
+    when:
+      - its_ansible is defined
+      - its_ansible.favorites is defined
+      - its_ansible.managed
+      - ansible_distribution == 'Ubuntu'
+
   tags: self-managed
+  
 ...

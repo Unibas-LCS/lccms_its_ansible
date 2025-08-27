@@ -1,4 +1,17 @@
 ---
+- name: "Check if Chrome is already installed."
+  shell: |
+    if command -v google-chrome >/dev/null 2>&1 || \
+       command -v google-chrome-stable >/dev/null 2>&1 || \
+       dpkg -l | grep -q "google-chrome"; then
+      echo "installed"
+    else
+      echo "not_installed"
+    fi
+  register: chrome_check
+  changed_when: false
+  failed_when: false
+
 - block:
   - name: Add Google Chrome GPG Key
     ansible.builtin.get_url:
@@ -26,4 +39,7 @@
       path: /etc/apt/apt.conf.d/50unattended-upgrades
       line: '        "Google LLC:stable";'
       insertafter: 'Unattended-Upgrade::Allowed-Origins {'
-  when: global_network_available | default(false)
+  
+  when:
+    - global_network_available | default(false)
+    - chrome_check.stdout == "not_installed"

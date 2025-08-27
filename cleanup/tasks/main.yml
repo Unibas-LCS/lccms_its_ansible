@@ -9,20 +9,14 @@
     path: /usr/share/applications/ansible-managed.desktop
     state: "absent"
 
-- name: "Remove update script."
+- name: "Remove update scripts."
   file:
-    path: "/opt/update_to_24.04.sh"
+    path: "{{ item }}"
     state: absent
-
-- name: "Remove update update script."
-  file:
-    path: "/opt/update_to_24.04_update.sh"
-    state: absent
-
-- name: "Remove update sudoers file."
-  file:
-    path: "/etc/sudoers.d/update"
-    state: absent
+  loop:
+    - "/opt/update_to_24.04.sh"
+    - "/opt/update_to_24.04_update.sh"
+    - "/etc/sudoers.d/update"
 
 - name: "Gather package information."
   ansible.builtin.package_facts:
@@ -47,3 +41,29 @@
     - sublime-text.list
     - docker.list
     - vscode.list
+
+- name: "Remove old microsoft repository key."
+  file:
+    path: "/etc/apt/keyrings/microsoft.asc"
+    state: absent
+
+- name: "Check Microsoft GPG key format."
+  ansible.builtin.command: file /usr/share/keyrings/microsoft-prod.gpg
+  register: ms_gpg_file
+  failed_when: false
+  changed_when: false
+
+- block:
+  - name: "Remove ASCII-armored Microsoft key."
+    ansible.builtin.file:
+      path: /usr/share/keyrings/{{ item }}
+      state: absent
+    with_items:
+      - microsoft-prod.gpg
+      - microsoft.asc
+  - name: "Remove microsoft repository."
+    ansible.builtin.file:
+      path: /etc/apt/sources.list.d/microsoft-prod.sources
+      state: absent
+
+  when: "'PGP public key block Public-Key (old)' in ms_gpg_file.stdout"

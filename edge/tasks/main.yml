@@ -3,7 +3,7 @@
 # This protects against installation if the machine was installed without lccms and them moved
 # into lccms.
 - block:
-  - name: Create /etc/opt/edge/policies/managed/ directory
+  - name: "Create /etc/opt/edge/policies/managed/ directory."
     file:
       path: /etc/opt/edge/policies/managed/
       state: directory
@@ -11,7 +11,7 @@
       owner: root
       group: root
 
-#  - name: Install Teams and Outlook PWA
+#  - name: "Install Teams and Outlook PWA."
 #    template:
 #      src: policies.json
 #      dest: /etc/opt/edge/policies/managed/policies.json
@@ -19,10 +19,12 @@
 #      group: root
 #      mode: 0644
 
-  - name: Install the edge flatpak package
+  - name: "Install the edge flatpak package."
     flatpak:
       name: com.microsoft.Edge
       state: present
+      method: system
+      remote: flathub
     when: its_edge.flatpak is true
 
 #  - name: "Allow the edge flatpak app to see the config file"
@@ -30,13 +32,13 @@
 #      cmd: "/usr/bin/flatpak override com.microsoft.Edge --filesystem=/etc/opt/edge:ro"
 #    changed_when: false
 
-  - name: Remove the edge flatpak package
+  - name: "Remove the edge flatpak package."
     flatpak:
       name: com.microsoft.Edge
       state: absent
     when: its_edge.flatpak is false
 
-  - name: Add the edge apt repo
+  - name: "Add the edge apt repo."
     deb822_repository:
       name: microsoft-edge
       types: deb
@@ -47,20 +49,20 @@
       signed_by: https://packages.microsoft.com/keys/microsoft.asc
     when: its_edge.apt is true
 
-  - name: Install the edge apt package
+  - name: "Install the edge apt package."
     apt:
       name: microsoft-edge-stable
       state: present
       update_cache: yes
     when: its_edge.apt is true
 
-  - name: Remove the edge apt package
+  - name: "Remove the edge apt package."
     apt:
       name: microsoft-edge-stable
       state: absent
     when: its_edge.apt is false
 
-  - name: Remove the edge apt repo
+  - name: "Remove the edge apt repo."
     deb822_repository:
       name: microsoft-edge
       types: deb

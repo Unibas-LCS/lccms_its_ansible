@@ -4,7 +4,7 @@
   - name: "Download Firefox APT Keyring."
     get_url:
       url: https://packages.mozilla.org/apt/repo-signing-key.gpg
-      dest: /etc/apt/keyrings/packages.mozilla.org.asc
+      dest: /usr/share/keyrings/packages.mozilla.org.asc
       mode: '644'
 
   - name: "Add Firefox Repository."
@@ -14,7 +14,7 @@
       uris: https://packages.mozilla.org/apt
       suites: mozilla
       components: main
-      signed_by: /etc/apt/keyrings/packages.mozilla.org.asc
+      signed_by: /usr/share/keyrings/packages.mozilla.org.asc
 
   - name: "Copy Mozilla APT prioritization file in place."
     copy:
@@ -41,14 +41,17 @@
       update_cache: yes
     register: firefox_apt
 
-  - name: "Adapt favorites if newly installed."
-    replace:
-      path: "/usr/share/glib-2.0/schemas/10_ubuntu-settings.gschema.override"
-      regexp: 'firefox_firefox.desktop'
-      replace: 'firefox.desktop'
+  - name: "Replace or add to favorites if not already done."
+    set_fact:
+      its_ansible: "{{ its_ansible | combine({
+        'favorites':
+          ('firefox_firefox.desktop' in its_ansible.favorites) | ternary(
+            its_ansible.favorites | map('regex_replace', '^firefox_firefox\\.desktop$', 'firefox.desktop') | list,
+            (its_ansible.favorites + ['firefox.desktop'])
+            if 'firefox.desktop' not in its_ansible.favorites
+            else its_ansible.favorites
+          )
+      }, recursive=True) }}"
     when: firefox_apt is changed
-
-  - name: "Compile schemas if newly installed."
-    command: "/usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas/"
-    when: firefox_apt is changed
+  
   when: global_network_available | default(false)

@@ -1,6 +1,7 @@
 ---
+# Install flatpak and switch the store icon
 - block:
-  - name: "Install the flatpak apt packages"
+  - name: "Install the flatpak apt packages."
     apt:
       name: "{{ item }}"
       state: present
@@ -8,8 +9,25 @@
       - flatpak
       - gnome-software-plugin-flatpak
 
-  - name: "Add the flathub repo"
-    command:
-      cmd: "flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo"
-    changed_when: False
+  - name: "Add the Flathub remote"
+    community.general.flatpak_remote:
+      name: flathub
+      state: present
+      flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+      method: system
+    changed_when: false
+    
+  - name: "Replace snap-store with GNOME Software in favorites or add if missing."
+    set_fact:
+      its_ansible: "{{ its_ansible | combine({
+        'favorites':
+          ('snap-store_snap-store.desktop' in its_ansible.favorites) | ternary(
+            its_ansible.favorites | map('regex_replace', '^snap-store_snap-store\\.desktop$', 'org.gnome.Software.desktop') | list,
+            (its_ansible.favorites + ['org.gnome.Software.desktop'])
+            if 'org.gnome.Software.desktop' not in its_ansible.favorites
+            else its_ansible.favorites
+          )
+      }, recursive=True) }}"
+
+
   when: global_network_available | default(false)
