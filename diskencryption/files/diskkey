@@ -5,9 +5,19 @@ MAPPED_NAME=$(/usr/bin/cut -d" " -f1 /etc/crypttab)
 
 BACKING_DEV=$(/usr/sbin/cryptsetup status $MAPPED_NAME 2>/dev/null | /usr/bin/grep "device:" | /usr/bin/awk '{print $2}')
 
-echo "Using device: $BACKING_DEV for LUKS operations"
+#echo "Using device: $BACKING_DEV for LUKS operations"
 
 case $1 in
+  localadmin)
+    if [ "$EUID" -eq 0 ]
+    then
+      echo "Please enter the original disk encryption password when prompted for an existing and remaining passphrase."
+      /usr/sbin/cryptsetup luksKillSlot $BACKING_DEV 1 2>/dev/null
+      /usr/sbin/cryptsetup --key-slot=1 luksAddKey $BACKING_DEV
+    else
+      echo "You need to run this as root!"
+    fi
+    ;;
   set)
     echo "Please enter the administrator's password when prompted for an existing and remaining passphrase."
     sudo /usr/sbin/cryptsetup luksKillSlot $BACKING_DEV 2 2>/dev/null

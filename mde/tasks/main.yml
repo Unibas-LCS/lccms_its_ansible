@@ -55,6 +55,7 @@
       suites: [noble]
       components: [main]
       signed_by: /usr/share/keyrings/microsoft-prod.gpg
+      architectures: amd64
     register: ms_repo
 
   - name: "Update apt cache if repository changed."

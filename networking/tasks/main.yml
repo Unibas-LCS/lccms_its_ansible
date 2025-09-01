@@ -1,10 +1,35 @@
 ---
-- name: "Install polkitd-pkla package because otherwise it does not work anymore"
+- name: "Install polkitd-pkla package on Ubuntu < 25 because otherwise it does not work anymore."
   apt:
     name: polkitd-pkla
     state: present
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version is version('25.04', '<')
 
-- name: "Allow all users to change network settings"
-  copy: 
-    src: org.freedesktop.NetworkManager.txt
+#- name: "Allow all users to change network settings"
+#  copy:
+#    src: org.freedesktop.NetworkManager.txt
+#    dest: /etc/polkit-1/localauthority/50-local.d/org.freedesktop.NetworkManager.pkla
+
+- name: "Copy polkit .pkla file for Ubuntu <= 24.10."
+  ansible.builtin.copy:
+    src: files/org.freedesktop.NetworkManager.txt
     dest: /etc/polkit-1/localauthority/50-local.d/org.freedesktop.NetworkManager.pkla
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version is version('25.04', '<')
+
+- name: Copy polkit .rules file for Ubuntu >= 25.04
+  ansible.builtin.copy:
+    src: files/50-networkmanager.rules
+    dest: /etc/polkit-1/rules.d/50-networkmanager.rules
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - ansible_distribution == "Ubuntu"
+    - ansible_distribution_version is version('25.04', '>=')

@@ -1,5 +1,6 @@
 ---
 # Install the global protect VPN packages.
+# Currently, only Ubuntu 24.04LTS is supported. We thus do not install if any higher release than 24.xx is run.
 - block:
   - name: "Install resolvconf for GP."
     ansible.builtin.apt:
@@ -7,9 +8,20 @@
       state: present
     when: its_globalprotect.kind == 'laptop'
 
+#  - name: "Install libqt5webkit5_5.212.0 for GP on 25 or higher if gp is less than 6.3."
+#    ansible.builtin.apt:
+#      name: libqt5webkit5
+#      state: present
+#    when:
+#      - its_globalprotect.kind == 'laptop'
+#      - ansible_facts['distribution'] == 'Ubuntu'
+#      - ansible_facts['distribution_version'] is version('25.04', '>=')
+
   - name: "Install the Global Protect APT Package."
     ansible.builtin.apt:
       name: "globalprotect"
       state: present
     when: its_globalprotect.kind == 'laptop'
-  when: global_network_available | default(false)
+  when:
+    - global_network_available | default(false)
+    - ansible_distribution_version is version('25.0', '<')
