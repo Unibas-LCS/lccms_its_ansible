@@ -1,0 +1,5 @@
+[org/gnome/shell]
+favorite-apps=[{{ its_ansible.favorites
+                   | map('replace', "'", "")
+                   | map('regex_replace', '^(.*)$', "'\\1'")
+                   | join(', ') }}]
