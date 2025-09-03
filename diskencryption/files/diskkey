@@ -3,7 +3,7 @@
 
 MAPPED_NAME=$(/usr/bin/cut -d" " -f1 /etc/crypttab)
 
-BACKING_DEV=$(/usr/sbin/cryptsetup status $MAPPED_NAME 2>/dev/null | /usr/bin/grep "device:" | /usr/bin/awk '{print $2}')
+BACKING_DEV=$(sudo /usr/sbin/cryptsetup status $MAPPED_NAME 2>/dev/null | /usr/bin/grep "device:" | /usr/bin/awk '{print $2}')
 
 #echo "Using device: $BACKING_DEV for LUKS operations"
 
