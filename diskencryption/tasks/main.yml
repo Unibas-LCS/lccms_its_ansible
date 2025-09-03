@@ -8,7 +8,7 @@
     group: root
     mode: "{{ item.mode }}"
   with_items:
-    - { src: "sudo_cryptsetup", dst: "/etc/sudoers.d/cryptsetup", mode: "u=rw,g=r,o-rwx" }
+    - { src: "sudo_cryptsetup", dst: "/etc/sudoers.d/cryptsetup", mode: "u=r,g=r,o-rwx" }
     - { src: "diskkey",         dst: "/usr/sbin/diskkey",         mode: "u=rwx,g=rx,o=rx"}
   tags: self-managed
 

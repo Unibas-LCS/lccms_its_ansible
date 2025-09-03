@@ -8,13 +8,15 @@
   ansible.builtin.hostname:
     name: "{{ its_fqdn.name }}"
 
-## May be necessary, check it out and replace actual_hostname!
 ## * On a mobile device, ensure we have a 127.0.0.1 entry to a working greeter
-##- name: "its.setfqdn: Set an entry for the 127.0.0.1 address."
-##  lineinfile:
-##    path: "/etc/hosts"
-##    regexp: '^127\.0\.1\.1'
-##    line: "127.0.1.1    {{ its_fqdn.name }} {{ actual_hostname }}"
-##    insertafter: '^127\.0\.0\.1'
-##    state: present
-##  when: "{{ its_fqdn.kind }} == 'mobile'"
+- name: "Set the full entry for the 127.0.0.1 address."
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ its_fqdn.name }} {{ ansible_hostname }}"
+    insertafter: '^127\.0\.0\.1'
+    state: present
+  when:
+  - its_fqdn.kind == "laptop"
+  - ansible_distribution == "Ubuntu"
+  - ansible_distribution_version is version('25.04', '>=')

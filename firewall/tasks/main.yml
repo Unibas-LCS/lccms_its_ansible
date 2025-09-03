@@ -36,5 +36,5 @@
     group: root
     mode: "{{ item.mode }}"
   with_items:
-    - { src: "sudo_ufw",        dst: "/etc/sudoers.d/ufw",        mode: "u=rw,g=r,o-rwx" }
+    - { src: "sudo_ufw",        dst: "/etc/sudoers.d/ufw",        mode: "u=r,g=r,o-rwx" }
     - { src: "remote",          dst: "/usr/sbin/remote",          mode: "u=rwx,g=rx,o=rx"}
