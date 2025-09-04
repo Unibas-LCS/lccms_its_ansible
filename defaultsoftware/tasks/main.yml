@@ -1,38 +1,40 @@
 ---
 - block:
-# Install any listed apt, snap, or flatpak packages.
-  - name: "{{ 'Install Apt applications.</br>\n' + (its_defaultsoftware.apt | join('</br>\n')) if its_defaultsoftware.apt | length > 0 else 'No Apt applications to install' }}"
-#  - name: "Install Apt packages.</br>\n {{ its_defaultsoftware.apt | replace(',', '</br>\n') | replace('[', '') | replace(']', '') | replace(\"'\", '') }}"
+# Install any listed apt, snap, or flatpak packages either from the its_defaultssoftware lists or from the CMDB software lists.
+
+  - set_fact:
+      combined_apt: "{{ (its_defaultsoftware.apt | default([])) + (Unibas_MDMLCCMSRequiredPackages.apt | default([])) }}"
+      combined_snap: "{{ (its_defaultsoftware.snap | default([])) + (Unibas_MDMLCCMSRequiredPackages.snap | default([])) }}"
+      combined_flatpak: "{{ (its_defaultsoftware.flatpak | default([])) + (Unibas_MDMLCCMSRequiredPackages.flatpak | default([])) }}"
+
+  - name: "{{ 'Install Apt applications:</br>' + (combined_apt | join('</br>')) if combined_apt | length > 0 else '' }}"
     apt:
-      name: "{{ its_defaultsoftware.apt }}"
-      state: "present"
-      update_cache: yes
-    when: its_defaultsoftware.apt | length > 0
-
-  - name: "{{ 'Install Snap applications.</br>\n' + (its_defaultsoftware.snap | join('</br>\n')) if its_defaultsoftware.snap | length > 0 else '' }}"
-    community.general.snap:
-      name: "{{ item }}"
+      name: "{{ combined_apt }}"
       state: present
-    loop: "{{ its_defaultsoftware.snap }}"
-    when: its_defaultsoftware.snap | length > 0
+      update_cache: yes
+    when: combined_apt | length > 0
 
-  - name: "{{ 'Install Flatpak applications.</br>\n' + (its_defaultsoftware.flatpak | join('</br>\n')) if its_defaultsoftware.flatpak | length > 0 else '' }}"
+  - name: "{{ 'Install Snap applications:</br>' + (combined_snap | join('</br>')) if combined_snap | length > 0 else '' }}"
+    community.general.snap:
+      name: "{{ combined_snap }}"
+      state: present
+    when: combined_snap | length > 0
+
+  - name: "{{ 'Install Flatpak applications:</br>' + (combined_flatpak | join('</br>')) if combined_flatpak | length > 0 else '' }}"
     community.general.flatpak:
-      name: "{{ item }}"
+      name: "{{ combined_flatpak }}"
       state: present
       remote: flathub
-    loop: "{{ its_defaultsoftware.flatpak }}"
-    when: its_defaultsoftware.flatpak | length > 0
+    when: combined_flatpak | length > 0
 
   when: global_network_available | default(false)
 
-- name: "Install utilities in /usr/local/bin/.<br>{{ with_items | map(attribute='src') | join('<br>') }}"
+- name: "{{ 'Install utilities in /usr/local/bin/.<br>' + (its_defaultsoftware.utilities | map(attribute='src') | join('<br>')) if its_defaultsoftware.utilities | length > 0 else '' }}"
   copy:
     src: "{{ item.src }}"
     dest: "/usr/local/bin/"
     owner: root
     group: root
     mode: "{{ item.mode }}"
-  with_items:
-    - { src: "linux-mdatp-health.sh",        mode: "a+x" }
+  loop: "{{ its_defaultsoftware.utilities }}"
 
