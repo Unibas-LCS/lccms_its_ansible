@@ -16,13 +16,14 @@
   register: 'gpg_import_result'
   changed_when: '"unchanged: 1" not in gpg_import_result.stderr'
 
-- name: "Configure /etc/aliases."
+- name: "Configure /etc/aliases if managed."
   lineinfile:
     dest: "/etc/aliases"
     regexp: '^#?{{ item.alias }}\s*:'
     line: "{{ item.alias }}:\t{{ item.target }}"
   with_items: '{{ its_mta.mail_aliases }}'
   register: aliases
+  when: its_mta.management == "managed"
 
 - name: "Set relayhost in postfix config smtp.unibas.ch for non mobile system."
   lineinfile:

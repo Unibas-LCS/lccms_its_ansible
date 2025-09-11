@@ -2,6 +2,7 @@
 its_mta:
   hostname: "{{ lccms.host }}"
   system: "{{ cmdb.Unibas_Stationary }}"
+  management: "{{ cmdb.Unibas_Managed }}"
   mail_aliases:
     -
       alias: root
