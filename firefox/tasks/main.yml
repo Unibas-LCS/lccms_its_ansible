@@ -53,5 +53,13 @@
           )
       }, recursive=True) }}"
     when: firefox_apt is changed
+
+  - name: Copy unattended-upgrades config
+    ansible.builtin.copy:
+      src: 50unattended_firefox
+      dest: /etc/apt/apt.conf.d/50unattended_firefox
+      owner: root
+      group: root
+      mode: 0644
   
   when: global_network_available | default(false)

@@ -1,1 +1,5 @@
 ---
+- name: reload NetworkManager
+  become: true
+  ansible.builtin.command:
+    cmd: nmcli connection reload

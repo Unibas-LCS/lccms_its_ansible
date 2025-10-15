@@ -33,3 +33,26 @@
   when:
     - ansible_distribution == "Ubuntu"
     - ansible_distribution_version is version('25.04', '>=')
+
+# This can be used to preconfigure a WIFI connection.
+- block:
+  - name: "Adding WiFi definition: Ensure NetworkManager directory exists."
+    become: true
+    ansible.builtin.file:
+      path: /etc/NetworkManager/system-connections
+      state: directory
+      mode: '0755'
+
+  - name: "Ensure NetworkManager connection configurations."
+    become: true
+    ansible.builtin.template:
+      src: iot_wifi.j2
+      dest: "/etc/NetworkManager/system-connections/{{ item.name }}.nmconnection"
+      owner: root
+      group: root
+      mode: '0600'
+    loop: "{{ its_networking.wifi }}"
+    notify:
+      - reload NetworkManager
+
+  when: (its_networking.wifi | default([]) | length) > 0

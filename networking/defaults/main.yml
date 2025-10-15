@@ -1,1 +1,9 @@
 ---
+# To add a predfined WIFI connection, create a list of tuples with the following elements:
+# name: the name of the configuration shown to the user
+# ssid: the ssid of the wifi network
+# psk: the WPA2-PSK of the network
+# uuid: the full uuid of the connection, use uuidgen to generate one on the commandline.
+# autoconnect (optional, default: false): whether or not to automatically connect.
+its_networking:
+  wifi: []

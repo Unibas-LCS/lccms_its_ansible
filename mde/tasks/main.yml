@@ -83,5 +83,14 @@
     copy:
       src: "mdatp_cron_job"
       dest: "/etc/logrotate.d/mdatp_cron_job"
+
+  - name: Copy unattended-upgrades config
+    ansible.builtin.copy:
+      src: 50unattended_mde
+      dest: /etc/apt/apt.conf.d/50unattended_mde
+      owner: root
+      group: root
+      mode: 0644
+
   when: global_network_available | default(false)
   tags: self-managed

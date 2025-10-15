@@ -34,12 +34,21 @@
       state: "present"
       update_cache: yes
 
+# To remove any old entries !!! To remove for Ubuntu 26 !!!
   - name: "Add automatic updates for Google Chrome to /etc/apt/apt.conf.d/50unattended-upgrades."
     ansible.builtin.lineinfile:
       path: /etc/apt/apt.conf.d/50unattended-upgrades
       line: '        "Google LLC:stable";'
-      insertafter: 'Unattended-Upgrade::Allowed-Origins {'
-  
+      state: absent
+
+  - name: Copy unattended-upgrades config
+    ansible.builtin.copy:
+      src: 50unattended_chrome
+      dest: /etc/apt/apt.conf.d/50unattended_chrome
+      owner: root
+      group: root
+      mode: 0644
+
   when:
     - global_network_available | default(false)
     - chrome_check.stdout == "not_installed"

@@ -67,3 +67,12 @@
       state: absent
 
   when: "'PGP public key block Public-Key (old)' in ms_gpg_file.stdout"
+
+# Add the cleanUsers script to /usr/local/bin
+- name: "Add user cleanup script."
+  ansible.builtin.copy:
+    src: cleanUsers.sh
+    dest: /usr/local/bin/cleanUsers.sh
+    owner: root
+    group: root
+    mode: '0550'

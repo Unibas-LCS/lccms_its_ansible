@@ -25,13 +25,30 @@
   register: aliases
   when: its_mta.management == "managed"
 
+- name: "Set the canonical map file."
+  template:
+    src: sender_canonical.j2
+    dest: /etc/postfix/sender_canonical
+    owner: root
+    group: root
+    mode: '0644'
+  when: its_mta.management == "managed"
+
+- name: "Ensure sender_canonical_maps is configured."
+  lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: '^sender_canonical_maps\s*='
+    line: 'sender_canonical_maps = regexp:/etc/postfix/sender_canonical'
+  notify: 'restart postfix'
+  when: its_mta.management == "managed"
+
 - name: "Set relayhost in postfix config smtp.unibas.ch for non mobile system."
   lineinfile:
     dest: "/etc/postfix/main.cf"
     regexp: '^#?relayhost ='
     line: "relayhost = smtp.unibas.ch"
   notify: 'restart postfix'
-  when: its_mta.system != "mobile"
+  when: its_mta.system != "laptop"
 
 - name: "Set relayhost in postfix config smtp-ext.unibas.ch for mobile system."
   lineinfile:
@@ -39,7 +56,7 @@
     regexp: '^#?relayhost ='
     line: "relayhost = smtp-ext.unibas.ch"
   notify: 'restart postfix'
-  when: its_mta.system == "mobile"
+  when: its_mta.system == "laptop"
 
 - name: "Set myhostname for postfix."
   lineinfile:
@@ -62,6 +79,6 @@
   notify: 'restart postfix'
   when: setup_mailname.stat.exists
 
-- name: update aliases
+- name: "Update aliases."
   command: newaliases
   when: aliases is changed

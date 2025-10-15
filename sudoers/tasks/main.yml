@@ -9,10 +9,19 @@
     groups: sudo
     append: yes
   when: its_sudoers.addOwner
-
+  tags: self-managed
+  
 - name: "Remove the owner {{ its_sudoers.owner }} from the sudoers group."
   command: "gpasswd -d {{ its_sudoers.owner }} sudo"
   register: command_result
   changed_when: "not 'is not a member of' in command_result.stderr"
   failed_when: false
   when: not its_sudoers.addOwner and its_sudoers.owner != ""
+
+- name: "Allow all users to perform the reboot command without sudo password."
+  copy:
+    src: reboot
+    dest: /etc/sudoers.d/reboot
+    mode: 0440
+    owner: root
+    group: root

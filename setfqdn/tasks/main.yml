@@ -1,14 +1,10 @@
 ---
-# This could be omitted if the hostname is set within the lccm system. In this case, it
-# would not harm if the actual host uses a different name. However, in favour of clarity,
-# we suggest setting the actual hostname to what was defined in the lccm.
-
-#* Set the actual hostname to what is recorded in the management system if not done.
 - name: "Set the actual hostname to that recorded in the management system."
   ansible.builtin.hostname:
     name: "{{ its_fqdn.name }}"
+  tags: self-managed
 
-## * On a mobile device, ensure we have a 127.0.0.1 entry to a working greeter
+# * On a mobile device, ensure we have a 127.0.0.1 entry to a working greeter
 - name: "Set the full entry for the 127.0.0.1 address."
   lineinfile:
     path: "/etc/hosts"
