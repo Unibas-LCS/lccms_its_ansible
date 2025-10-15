@@ -1,9 +1,15 @@
 ---
-# To add a predfined WIFI connection, create a list of tuples with the following elements:
-# name: the name of the configuration shown to the user
+# To add a predfined WIFI connection, create records below the wifi key, where each record
+# must be labeled with the name of the configuration and contain the following elements:
 # ssid: the ssid of the wifi network
 # psk: the WPA2-PSK of the network
 # uuid: the full uuid of the connection, use uuidgen to generate one on the commandline.
 # autoconnect (optional, default: false): whether or not to automatically connect.
+# E.g.
+#  internet:
+#    ssid: unibas-device
+#    uuid: 8bef0963-ec9c-452b-bb7f-0a6b11f9cf72
+#    psk: YIWNdspx9225
+
 its_networking:
-  wifi: []
+  wifi:

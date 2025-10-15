@@ -6,7 +6,6 @@ its_users:
 
 # How to create the home for new users:
 #   auto: automatically create when the user is added,
-#   before: create the home before adding the user,
 #   zfs: create a zfs file system for each user
   create_homes: 'auto'
 

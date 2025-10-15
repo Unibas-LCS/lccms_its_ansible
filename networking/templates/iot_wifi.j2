@@ -1,17 +1,17 @@
 [connection]
-id={{ item.name }}
-uuid={{ item.uuid | default(lookup('pipe', 'uuidgen')) }}
+id={{ item.key }}
+uuid={{ item.value.uuid | default(lookup('pipe', 'uuidgen')) }}
 type=wifi
-autoconnect={{ item.autoconnect | default(false) | ternary('true', 'false') }}
+autoconnect={{ item.value.autoconnect | default(false) | ternary('true', 'false') }}
 permissions=
 
 [wifi]
 mode=infrastructure
-ssid={{ item.ssid }}
+ssid={{ item.value.ssid }}
 
 [wifi-security]
 key-mgmt=wpa-psk
-psk={{ item.psk }}
+psk={{ item.value.psk }}
 
 [ipv4]
 method=auto
