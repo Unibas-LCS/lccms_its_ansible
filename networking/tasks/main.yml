@@ -42,15 +42,19 @@
       state: directory
       mode: '0755'
 
-  - name: "Ensure NetworkManager connection configurations."
+  - name: "Create NetworkManager connection configurations."
     ansible.builtin.template:
       src: iot_wifi.j2
       dest: "/etc/NetworkManager/system-connections/{{ item.key }}.nmconnection"
       owner: root
       group: root
       mode: '0600'
-    loop: "{{ its_networking.wifi | default({}) | dict2items }}"
+    loop: "{{ its_networking.wifi | default({}, true) | dict2items }}"
     notify:
       - reload NetworkManager
 
-  when: (its_networking.wifi | default([]) | length) > 0
+  when:
+  - its_networking is defined
+  - its_networking.wifi is defined
+  - its_networking.wifi is not none
+  - its_networking.wifi | length > 0
