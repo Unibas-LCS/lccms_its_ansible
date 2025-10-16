@@ -1,7 +1,7 @@
 ---
 its_fqdn:
 # String The fully qualified hostname for this host.
-  name: "{{ lccms.host }}"
+  name: "{{ cmdb.Name }}.{{ cmdb.DomainName | default('client.unibas.ch', true) }}"
 
 # Option The kind of host. One of: desktop | laptop
   kind: "{{ cmdb.Unibas_Stationary }}"
