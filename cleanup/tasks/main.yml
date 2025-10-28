@@ -68,7 +68,6 @@
 
   when: "'PGP public key block Public-Key (old)' in ms_gpg_file.stdout"
 
-# Add the cleanUsers script to /usr/local/bin
 - name: "Add user cleanup script."
   ansible.builtin.copy:
     src: cleanUsers.sh
@@ -76,3 +75,19 @@
     owner: root
     group: root
     mode: '0550'
+
+- name: "Add package cleanup script."
+  ansible.builtin.copy:
+    src: cleanup.sh
+    dest: /usr/local/bin/cleanup.sh
+    owner: root
+    group: root
+    mode: '0544'
+
+- name: "Add the sudoers file for the cleanup script."
+  ansible.builtin.copy:
+    src: cleanup.sudo
+    dest: /etc/sudoers.d/cleanup
+    owner: root
+    group: root
+    mode: '0440'
