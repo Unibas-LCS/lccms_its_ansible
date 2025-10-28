@@ -49,8 +49,8 @@
       owner: root
       group: root
       mode: '0600'
-    loop: "{{ its_networking.wifi | default({}) | dict2items }}"
+    loop: "{{ its_networking.wifi | default({}, true) | dict2items }}"
     notify:
       - reload NetworkManager
 
-  when: (its_networking.wifi | default([]) | length) > 0
+  when: (its_networking.wifi | default([], true) | length) > 0
