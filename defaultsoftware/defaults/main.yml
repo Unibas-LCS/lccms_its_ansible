@@ -2,11 +2,8 @@
 # The lists are simple arrays with just the package names per item.
 its_defaultsoftware:
   apt: []
-  cmdb_apt: "{{ cmdb.Unibas_MDMLCCMSRequiredPackages.apt | default([]) }}"
   snap: []
-  cmdb_snap: "{{ cmdb.Unibas_MDMLCCMSRequiredPackages.snap | default([]) }}"
   flatpak: []
-  cmdb_flatpak: "{{ cmdb.Unibas_MDMLCCMSRequiredPackages.flatpak | default([]) }}"
   # This list is a list or records with the keys: 'src' (the utility name as given in the files folder) and 'mode' (the file access mode)
   utilities:
   - { src: "linux-mdatp-health.sh",        mode: "a+x" }

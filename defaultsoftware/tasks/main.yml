@@ -3,9 +3,9 @@
 # Install any listed apt, snap, or flatpak packages either from the its_defaultssoftware lists or from the CMDB software lists.
 
   - set_fact:
-      combined_apt: "{{ (its_defaultsoftware.apt | default([])) + its_defaultsoftware.cmdb_apt }}"
-      combined_snap: "{{ (its_defaultsoftware.snap | default([])) + its_defaultsoftware.cmdb_snap }}"
-      combined_flatpak: "{{ (its_defaultsoftware.flatpak | default([])) + its_defaultsoftware.cmdb_flatpak }}"
+      combined_apt: "{{ (its_defaultsoftware.apt | default([])) + (cmdb.Unibas_MDMLCCMSRequiredPackages.apt | default([])) }}"
+      combined_snap: "{{ (its_defaultsoftware.snap | default([])) + (cmdb.Unibas_MDMLCCMSRequiredPackages.snap | default([])) }}"
+      combined_flatpak: "{{ (its_defaultsoftware.flatpak | default([])) + (cmdb.Unibas_MDMLCCMSRequiredPackages.flatpak | default([])) }}"
 
   - name: "{{ 'Install Apt applications:</br>' + (combined_apt | join('</br>')) if combined_apt | length > 0 else '' }}"
     apt:
